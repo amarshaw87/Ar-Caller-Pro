@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Smooth scrolling transition behavior rule for our overall application template */
+html, body {
+  scroll-behavior: smooth;
+}
