@@ -27,7 +27,7 @@ SOURCE OF STATUS: ${fields.sourceStatus}
 ----------------------------------------------------------------------
 ELIGIBILITY STATUS TRACKING MATRIX:
 - Coverage Details Available: ${fields.coverageAvailable}
-- Policy Validation Timeline: Effective From: ${fields.policyEffectiveDate} ${fields.policyTermedDate ? `Until: ${fields.policyTermedDate}` : '(No Termed Date)'}
+- Policy Validation Timeline: Effective From: ${fields.policyEffectiveDate} ${fields.policyTermedDate ? \`Until: \${fields.policyTermedDate}\` : '(No Termed Date)'}
 - Policy Active status on Date of Service (DOS): ${fields.policyActiveDos}
 ----------------------------------------------------------------------
 CLAIM AUDIT & PROCESSING INSTRUCTIONS:
@@ -35,13 +35,12 @@ CLAIM AUDIT & PROCESSING INSTRUCTIONS:
 - Timely Filing Window (TFL): ${fields.tflValue}
 - Designated Submission Mailing Address: ${fields.claimMailingAddress}
 - Verification Fax Channel Destination: ${fields.faxNumber || 'N/A'} (Provided: ${fields.faxProvided})
-${fields.clearinghouseComments ? `- Clearinghouse Log Context: ${fields.clearinghouseComments}\n` : ''}${fields.additionalComments ? `- Additional On-Call Context: ${fields.additionalComments}\n` : ''}----------------------------------------------------------------------
-FINAL ASSIGNED SYSTEM ACTION CODE: [${fields.actionStatus.toUpperCase()}]
-======================================================================`
+\${fields.clearinghouseComments ? \`- Clearinghouse Log Context: \${fields.clearinghouseComments}\\n\` : ''}\underline{\${fields.additionalComments ? \`- Additional On-Call Context: \${fields.additionalComments}\\n\` : ''}}----------------------------------------------------------------------
+FINAL ASSIGNED SYSTEM ACTION CODE: [\${fields.actionStatus.toUpperCase()}]
+======================================================================\`
 
     onFormSubmit(generatedSummary)
   }
-
   const handleReset = () => {
     setFields({
       sourceStatus: '', clearinghouseComments: '', insuranceName: '', insurancePhone: '',
@@ -76,7 +75,6 @@ FINAL ASSIGNED SYSTEM ACTION CODE: [${fields.actionStatus.toUpperCase()}]
             <label className="text-xs font-bold uppercase tracking-wide">Clearing House Comment (Please make the changes if required):</label>
             <textarea id="clearinghouseComments" rows={2} value={fields.clearinghouseComments} onChange={handleChange} className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`} />
           </div>
-
           <div className="flex flex-col gap-1">
             <label className="text-xs font-bold uppercase tracking-wide">Insurance Name:*</label>
             <input type="text" id="insuranceName" value={fields.insuranceName} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`} />
@@ -140,9 +138,7 @@ FINAL ASSIGNED SYSTEM ACTION CODE: [${fields.actionStatus.toUpperCase()}]
             <label className="text-xs font-bold uppercase tracking-wide">Claim Mailing Address:*</label>
             <textarea id="claimMailingAddress" rows={2} value={fields.claimMailingAddress} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`} />
           </div>
-
           <div className="flex flex-col gap-1">
-                      <div className="flex flex-col gap-1">
             <label className="text-xs font-bold uppercase tracking-wide">Is Fax Number provided by rep or available?:*</label>
             <select id="faxProvided" value={fields.faxProvided} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}>
               <option value="Yes">Yes</option>
@@ -177,7 +173,6 @@ FINAL ASSIGNED SYSTEM ACTION CODE: [${fields.actionStatus.toUpperCase()}]
             <label className="text-xs font-bold uppercase tracking-wide">Call Reference#:*</label>
             <input type="text" id="callReference" value={fields.callReference} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`} />
           </div>
-
           <div className="flex flex-col gap-1">
             <label className="text-xs font-bold uppercase tracking-wide">Action:*</label>
             <select id="actionStatus" value={fields.actionStatus} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}>
@@ -200,4 +195,7 @@ FINAL ASSIGNED SYSTEM ACTION CODE: [${fields.actionStatus.toUpperCase()}]
     </section>
   )
 }
+
+
+
 
