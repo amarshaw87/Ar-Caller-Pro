@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev/config/
+// https://vitejs.dev
 export default defineConfig({
   plugins: [react()],
-  // Using an empty base path forces all assets to build completely relative to where they sit
-  base: '',
+  // 🚀 FIXED: Setting the base path to './' forces Vite to map every single style asset relatively
+  base: './',
 })
