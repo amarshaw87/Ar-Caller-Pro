@@ -4,6 +4,6 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev
 export default defineConfig({
   plugins: [react()],
-  // Keeping the base path relative ensures it deploys perfectly to GitHub Pages
-  base: './',
+  // 🚀 CRITICAL FIX: Tell Vite to build relative assets matching your exact GitHub Repository path name
+  base: '/Ar-Caller-Pro/',
 })
