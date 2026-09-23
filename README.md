@@ -8,24 +8,35 @@ Instead of generic tutorial applications, this system introduces process automat
 
 The system utilizes a decoupling pattern separating domain tracking modules, global state highways, and local synchronization data states:
 
-```src/
-├── data/
-│   ├── scenarios.json      # DB 1: Data storage for the 60+ Scenarios & Denials
-│   ├── insurancePh.json    # DB 2: Text records for the Payer Directory List
-│   ├── tflRules.json       # DB 3: Clear column maps for Timely Filing Limits
-│   └── contentData.json    # DB 4: Content storage for AR Intro and RCM Steps
-├── components/
-│   ├── Header.jsx          # Top bar navbar + dynamic mode switcher (No Quiz)
-│   ├── LoginGateway.jsx    # Single-gateway entry form box for all roles
-│   ├── WorkspaceView.jsx   # Handles conditional page grid loads based on clicks
-│   ├── FormMatrix.jsx      # Note template inputs grid (Holds 20 structured fields)
-│   ├── Scratchpad.jsx      # Live editable account-note generation block
-│   ├── InfoContainer.jsx   # Dynamic rich text handler for AR/RCM descriptive views
-│   └── Footer.jsx          # Universal footer band (Strictly: © 2026 AR Caller Pro)
-├── App.jsx                 # Application core state root hub (Manages Active User Role)
-├── index.css               # Code injection framework launching Tailwind directives
-└── main.jsx                # Core virtual DOM compiler mounting the application
-```
+Ar-Caller-Pro/
+├── .github/
+│   └── workflows/
+│       └── static.yml          # Production compiler pipeline (GitHub Actions)
+├── public/
+│   └── images/                 # Image asset paths for scenario layout flowcharts
+├── src/
+│   ├── data/
+│   │   ├── scenarios.json      # DB 1: Data storage for the 60+ Scenarios & Denials
+│   │   ├── insurancePh.json    # DB 2: Text records for the Payer Directory List
+│   │   ├── tflRules.json       # DB 3: Clear column maps for Timely Filing Limits
+│   │   └── contentData.json    # DB 4: Content storage for AR Intro and RCM Steps
+│   ├── components/
+│   │   ├── Header.jsx          # Top bar navbar + dynamic mode switcher 
+│   │   ├── LoginGateway.jsx    # Single-gateway entry form box for all roles
+│   │   ├── WorkspaceView.jsx   # Handles conditional page grid loads based on clicks
+│   │   ├── FormMatrix.jsx      # Note template inputs grid (Holds 20 structured fields)
+│   │   ├── Scratchpad.jsx      # Live editable account-note generation block
+│   │   ├── InfoContainer.jsx   # Dynamic rich text handler for AR/RCM descriptive views
+│   │   └── Footer.jsx          # Universal footer band (Strictly: © 2026 AR Caller Pro)
+│   ├── App.jsx                 # Application core state root hub (Manages Active User Role)
+│   ├── index.css               # Code injection framework launching Tailwind directives
+│   └── main.jsx                # Core virtual DOM compiler mounting the application
+├── index.html                  # Main application structural HTML gateway template frame
+├── package.json                # Project dependencies manifest tracking code frameworks
+├── postcss.config.js           # Stylesheet transformation parsing script engine config
+├── tailwind.config.js          # Core design optimization mapping system configuration tokens
+└── vite.config.js              # Primary compilation asset routing deployment rules engine
+
 
 ## ⚙️ Advanced Engineering Highlights
 
