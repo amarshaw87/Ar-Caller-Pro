@@ -1,0 +1,23 @@
+{
+  "rules": [
+    { "insurance": "AARP", "limit": "15 months" },
+    { "insurance": "Absolute Total Care", "limit": "365 days" },
+    { "insurance": "Aetna (Commercial)", "limit": "120 days" },
+    { "insurance": "Aetna Better Health Of NJ (Medicaid)", "limit": "180 days" },
+    { "insurance": "Aetna Better Health Of CA (Medicaid)", "limit": "180 days" },
+    { "insurance": "Aetna Better Health Of FL (Medicaid)", "limit": "180 days" },
+    { "insurance": "Aetna Better Health Of GA (Medicaid)", "limit": "180 days" },
+    { "insurance": "Aetna Better Health Of IL (Medicaid)", "limit": "180 days" },
+    { "insurance": "Aetna Better Health Of KY (Medicaid & Medicare)", "limit": "365 days" },
+    { "insurance": "Aetna Better Health Of KY (Medicaid)", "limit": "365 days" },
+    { "insurance": "Aetna Better Health Of OH (Medicaid)", "limit": "365 days" },
+    { "insurance": "Aetna Better Health Of PA (Medicaid)", "limit": "180 days" },
+    { "insurance": "Aetna Better Health Of WV (Medicaid)", "limit": "365 days" },
+    { "insurance": "Affinity Medical Group", "limit": "90 days" },
+    { "insurance": "Anthem Blue Cross Blue Shield", "limit": "180 days" },
+    { "insurance": "Cigna (Commercial)", "limit": "90 days" },
+    { "insurance": "Humana (Commercial)", "limit": "180 days" },
+    { "insurance": "Medicare Part A & B", "limit": "365 days" },
+    { "insurance": "UnitedHealthcare (UHC)", "limit": "90 days" }
+  ]
+}
