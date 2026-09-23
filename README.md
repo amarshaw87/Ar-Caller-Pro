@@ -8,6 +8,7 @@ Instead of generic tutorial applications, this system introduces process automat
 
 The system utilizes a decoupling pattern separating domain tracking modules, global state highways, and local synchronization data states:
 
+```text
 Ar-Caller-Pro/
 ├── .github/
 │   └── workflows/
@@ -36,7 +37,7 @@ Ar-Caller-Pro/
 ├── postcss.config.js           # Stylesheet transformation parsing script engine config
 ├── tailwind.config.js          # Core design optimization mapping system configuration tokens
 └── vite.config.js              # Primary compilation asset routing deployment rules engine
-
+```
 
 ## ⚙️ Advanced Engineering Highlights
 
