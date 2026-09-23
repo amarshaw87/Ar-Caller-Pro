@@ -25,8 +25,7 @@ export default function App() {
   const [insurancePh, setInsurancePh] = useState(baseInsurancePh.records)
   const [tflRules, setTflRules] = useState(baseTflRules.rules)
   const [contentData, setContentData] = useState(baseContentData)
-
-  // Load any previously saved admin modifications securely from browser memory on startup
+    // Load any previously saved admin modifications securely from browser memory on startup
   useEffect(() => {
     const cachedScenarios = localStorage.getItem('ar_scenarios')
     const cachedInsurancePh = localStorage.getItem('ar_insurance_ph')
@@ -84,8 +83,7 @@ export default function App() {
       </div>
     )
   }
-
-  return (
+    return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
       
       {/* GLOBAL HEADER HEADER CONTAINER BAND */}
@@ -137,7 +135,7 @@ export default function App() {
           />
         )}
 
-        {currentTab === 'INS PH#' && (
+                {currentTab === 'INS PH#' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
               <div>
@@ -171,7 +169,7 @@ export default function App() {
                   downloadAnchor.setAttribute("download", "insurancePh.json")
                   downloadAnchor.click()
                 }}
-                className="mb-4 text-xs font-semibold px-3 py-1 bg-zinc-500/20 rounded border border-zinc-400 hover:bg-zinc-500/40 transition-all"
+                className="mb-4 text-xs font-semibold px-3 py-1 bg-zinc-500/20 rounded border border-zinc-400 hover:bg-zinc-500/40 transition-all text-current"
               >
                 💾 Download Updated insurancePh.json File
               </button>
@@ -184,15 +182,30 @@ export default function App() {
             </div>
           </div>
         )}
-
-        {currentTab === 'TFL' && (
+                {currentTab === 'TFL' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
               <div>
                 <h1 className="text-xl font-bold uppercase tracking-tight">Timely Filing Limit (TFL) Sheet</h1>
                 <p className="text-xs text-red-500 font-bold mt-1">🔴 If you want to add TFL for any insurance to the below list, please click add button.</p>
               </div>
-                          {currentUser.role === 'admin' && (
+              {currentUser.role === 'admin' && (
+                <button 
+                  onClick={() => {
+                    const insName = prompt("Enter Insurance Plan Name:")
+                    const tflLimit = prompt("Enter Timely Filing Limit Window (e.g., 90 days):")
+                    if (insName && tflLimit) {
+                      handleAddNewTfl({ insurance: insName, limit: tflLimit })
+                    }
+                  }}
+                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider"
+                >
+                  ➕ Add New TFL Rule
+                </button>
+              )}
+            </div>
+
+            {currentUser.role === 'admin' && (
               <button 
                 onClick={() => {
                   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ rules: tflRules }, null, 2))
@@ -236,3 +249,7 @@ export default function App() {
     </div>
   )
 }
+
+
+
+
