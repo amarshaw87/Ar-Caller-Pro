@@ -192,16 +192,7 @@ export default function App() {
                 <h1 className="text-xl font-bold uppercase tracking-tight">Timely Filing Limit (TFL) Sheet</h1>
                 <p className="text-xs text-red-500 font-bold mt-1">🔴 If you want to add TFL for any insurance to the below list, please click add button.</p>
               </div>
-              {currentUser.role === 'admin' && (
-                <button 
-                  onClick={() => {
-                    const insName = prompt("Enter Insurance Plan Name:")
-                    const tflLimit = prompt("Enter Timely Filing Limit Window (e.g., 90 days):")
-                    if (insName && tflLimit) {
-                      handleAddNewTfl({ insurance: insName, limit: tflLimit })
-                    }
-                  }}
-                              {currentUser.role === 'admin' && (
+                          {currentUser.role === 'admin' && (
               <button 
                 onClick={() => {
                   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ rules: tflRules }, null, 2))
@@ -245,4 +236,3 @@ export default function App() {
     </div>
   )
 }
-
