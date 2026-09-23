@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // 🚀 CRITICAL FIX: Tell Vite to build relative assets matching your exact GitHub Repository path name
-  base: '/Ar-Caller-Pro/',
+  // Using an empty base path forces all assets to build completely relative to where they sit
+  base: '',
 })
