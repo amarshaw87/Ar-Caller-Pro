@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 
 export default function FormMatrix({ darkMode, onFormSubmit, onFormReset }) {
-  // Initialize state tracker fields to perfectly match the 20 required parameters
   const [fields, setFields] = useState({
     sourceStatus: '', clearinghouseComments: '', insuranceName: '', insurancePhone: '',
     repName: '', websiteName: '', coverageAvailable: 'Yes', policyEffectiveDate: '',
@@ -18,30 +17,34 @@ export default function FormMatrix({ darkMode, onFormSubmit, onFormReset }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     
-    // Auto-generate standard industry notes narrative block format matching instructions
-    const generatedSummary = `=== AR CALLER PRO SYSTEM NOTES ===
-DATE OF CALLED SUMMARY: ${new Date().toLocaleDateString()}
-INSURANCE: ${fields.insuranceName} (PH#: ${fields.insurancePhone}) | WEBSITE: ${fields.websiteName}
-REP NAME: ${fields.repName} | CALL REFERENCE NUMBER: ${fields.callReference}
-SOURCE OF STATUS: ${fields.sourceStatus}
-----------------------------------------------------------------------
-ELIGIBILITY STATUS TRACKING MATRIX:
-- Coverage Details Available: ${fields.coverageAvailable}
-- Policy Validation Timeline: Effective From: ${fields.policyEffectiveDate} ${fields.policyTermedDate ? \`Until: \${fields.policyTermedDate}\` : '(No Termed Date)'}
-- Policy Active status on Date of Service (DOS): ${fields.policyActiveDos}
-----------------------------------------------------------------------
-CLAIM AUDIT & PROCESSING INSTRUCTIONS:
-- System Payer ID: ${fields.payerId} (Validated via Rep: ${fields.payerIdProvided})
-- Timely Filing Window (TFL): ${fields.tflValue}
-- Designated Submission Mailing Address: ${fields.claimMailingAddress}
-- Verification Fax Channel Destination: ${fields.faxNumber || 'N/A'} (Provided: ${fields.faxProvided})
-\${fields.clearinghouseComments ? \`- Clearinghouse Log Context: \${fields.clearinghouseComments}\\n\` : ''}\underline{\${fields.additionalComments ? \`- Additional On-Call Context: \${fields.additionalComments}\\n\` : ''}}----------------------------------------------------------------------
-FINAL ASSIGNED SYSTEM ACTION CODE: [\${fields.actionStatus.toUpperCase()}]
-======================================================================\`
+    const noteLines = [
+      "=== AR CALLER PRO SYSTEM NOTES ===",
+      "DATE OF CALLED SUMMARY: " + new Date().toLocaleDateString(),
+      "INSURANCE: " + fields.insuranceName + " (PH#: " + fields.insurancePhone + ") | WEBSITE: " + fields.websiteName,
+      "REP NAME: " + fields.repName + " | CALL REFERENCE NUMBER: " + fields.callReference,
+      "SOURCE OF STATUS: " + fields.sourceStatus,
+      "----------------------------------------------------------------------",
+      "ELIGIBILITY STATUS TRACKING MATRIX:",
+      "- Coverage Details Available: " + fields.coverageAvailable,
+      "- Policy Validation Timeline: Effective From: " + fields.policyEffectiveDate + " (Term Date: " + (fields.policyTermedDate || "No Termed Date") + ")",
+      "- Policy Active status on Date of Service (DOS): " + fields.policyActiveDos,
+      "----------------------------------------------------------------------",
+      "CLAIM AUDIT & PROCESSING INSTRUCTIONS:",
+      "- System Payer ID: " + fields.payerId + " (Validated via Rep: " + fields.payerIdProvided + ")",
+      "- Timely Filing Window (TFL): " + fields.tflValue,
+      "- Designated Submission Mailing Address: " + fields.claimMailingAddress,
+      "- Verification Fax Channel Destination: " + (fields.faxNumber || "N/A") + " (Provided: " + fields.faxProvided + ")",
+      fields.clearinghouseComments ? "- Clearinghouse Log Context: " + fields.clearinghouseComments : "",
+      fields.additionalComments ? "- Additional On-Call Context: " + fields.additionalComments : "",
+      "----------------------------------------------------------------------",
+      "FINAL ASSIGNED SYSTEM ACTION CODE: [" + fields.actionStatus.toUpperCase() + "]",
+      "======================================================================="
+    ]
 
+    const generatedSummary = noteLines.filter(line => line !== "").join("\n")
     onFormSubmit(generatedSummary)
   }
-  const handleReset = () => {
+    const handleReset = () => {
     setFields({
       sourceStatus: '', clearinghouseComments: '', insuranceName: '', insurancePhone: '',
       repName: '', websiteName: '', coverageAvailable: 'Yes', policyEffectiveDate: '',
@@ -72,9 +75,10 @@ FINAL ASSIGNED SYSTEM ACTION CODE: [\${fields.actionStatus.toUpperCase()}]
           </div>
 
           <div className="flex flex-col gap-1 md:col-span-2 lg:col-span-3">
-            <label className="text-xs font-bold uppercase tracking-wide">Clearing House Comment (Please make the changes if required):</label>
+            <label className="text-xs font-bold uppercase tracking-wide">Clearing House Comment:</label>
             <textarea id="clearinghouseComments" rows={2} value={fields.clearinghouseComments} onChange={handleChange} className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`} />
           </div>
+
           <div className="flex flex-col gap-1">
             <label className="text-xs font-bold uppercase tracking-wide">Insurance Name:*</label>
             <input type="text" id="insuranceName" value={fields.insuranceName} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`} />
@@ -109,7 +113,7 @@ FINAL ASSIGNED SYSTEM ACTION CODE: [\${fields.actionStatus.toUpperCase()}]
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold uppercase tracking-wide">Is policy still active?/No Termed Date:*</label>
+            <label className="text-xs font-bold uppercase tracking-wide">Is policy active?:*</label>
             <select id="policyActive" value={fields.policyActive} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}>
               <option value="Yes">Yes</option>
               <option value="No / Terminated">No / Terminated</option>
@@ -122,7 +126,7 @@ FINAL ASSIGNED SYSTEM ACTION CODE: [\${fields.actionStatus.toUpperCase()}]
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold uppercase tracking-wide">Is Policy Active on DOS?:*</label>
+            <label className="text-xs font-bold uppercase tracking-wide">Active on DOS?:*</label>
             <select id="policyActiveDos" value={fields.policyActiveDos} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}>
               <option value="Yes">Yes</option>
               <option value="No">No</option>
@@ -130,16 +134,15 @@ FINAL ASSIGNED SYSTEM ACTION CODE: [\${fields.actionStatus.toUpperCase()}]
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold uppercase tracking-wide">TFL:*</label>
+            <label className="text-xs font-bold uppercase tracking-wide">TFL Window:*</label>
             <input type="text" id="tflValue" value={fields.tflValue} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`} />
           </div>
-
           <div className="flex flex-col gap-1 md:col-span-2 lg:col-span-3">
             <label className="text-xs font-bold uppercase tracking-wide">Claim Mailing Address:*</label>
             <textarea id="claimMailingAddress" rows={2} value={fields.claimMailingAddress} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`} />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold uppercase tracking-wide">Is Fax Number provided by rep or available?:*</label>
+                    <div className="flex flex-col gap-1">
+            <label className="text-xs font-bold uppercase tracking-wide">Is Fax Number available?:*</label>
             <select id="faxProvided" value={fields.faxProvided} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}>
               <option value="Yes">Yes</option>
               <option value="No">No</option>
@@ -152,7 +155,7 @@ FINAL ASSIGNED SYSTEM ACTION CODE: [\${fields.actionStatus.toUpperCase()}]
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold uppercase tracking-wide">Is Payer ID provided by rep or available?:*</label>
+            <label className="text-xs font-bold uppercase tracking-wide">Is Payer ID available?:*</label>
             <select id="payerIdProvided" value={fields.payerIdProvided} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}>
               <option value="Yes">Yes</option>
               <option value="No">No</option>
@@ -173,6 +176,7 @@ FINAL ASSIGNED SYSTEM ACTION CODE: [\${fields.actionStatus.toUpperCase()}]
             <label className="text-xs font-bold uppercase tracking-wide">Call Reference#:*</label>
             <input type="text" id="callReference" value={fields.callReference} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`} />
           </div>
+
           <div className="flex flex-col gap-1">
             <label className="text-xs font-bold uppercase tracking-wide">Action:*</label>
             <select id="actionStatus" value={fields.actionStatus} onChange={handleChange} required className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}>
@@ -195,7 +199,5 @@ FINAL ASSIGNED SYSTEM ACTION CODE: [\${fields.actionStatus.toUpperCase()}]
     </section>
   )
 }
-
-
 
 
