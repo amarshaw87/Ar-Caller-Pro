@@ -1,0 +1,48 @@
+name: Deploy AR Caller Pro Live Portal
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Set Up Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install System Code Dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Compile Production Code Build (Vite Distribution Pack)
+        run: npm run build
+
+      - name: Configure GitHub Pages Routing
+        uses: actions/configure-pages@v4
+
+      - name: Upload Compiled Static Distribution Assets
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Launch Website Live to GitHub Pages Server
+        id: deployment
+        uses: actions/deploy-pages@v4
