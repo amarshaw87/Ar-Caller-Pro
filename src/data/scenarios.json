@@ -1,0 +1,27 @@
+{
+  "no_claim_on_file": {
+    "id": "no_claim_on_file",
+    "title": "No Claim on File",
+    "category": "AR Scenario",
+    "onCallAnalysis": [
+      "When getting the status as no claim on file, always check the clearinghouse whether the claim was sent to insurance or it is rejected, if it is rejected then work as per the rejection.",
+      "There could be more than one CPTs billed on the same DOS or two DOS could be billed in a single claim form, so always open the claim form and provide the DOS range and total billed amount as mentioned in the claim form.",
+      "POTF stands for <strong>Proof of timely filing</strong>.",
+      "You can consider the below proof as POTF if these occurred within TFL:<br/>• An initial filed claim to the same insurance which is not received by the payer.<br/>• Initially rejected claims.<br/>• Initial billing to any other payer."
+    ],
+    "flowchartImage": "no-claim-on-file.png",
+    "importantNotesAndActions": [
+      "Please take action as per your process update. Below actions can be different from your process update.",
+      "If the patient policy is active on DOS and DOS lies within TFL and the payer ID & mailing address are the same as the system details then you can resubmit the claim.",
+      "If the payer ID provided by the rep is different than the payer ID mentioned in the system then search for the correct payer ID, update the correct plan code, and resubmit the claim.",
+      "If the correct payer ID is not available then Fax the claim if the Fax# is provided by the rep or else drop the claim through paper.",
+      "Always give priority to the submission of a claim via payer id or Fax# since sending a claim via mail takes a longer time.",
+      "If the patient policy is active on DOS and DOS has crossed the TFL and the rep confirms that you cannot fax or mail the claim along with POTF then resubmit the claim. Once TFL denial receives then you can send an appeal with POTF.",
+      "If the patient policy is active on DOS and DOS has crossed the TFL and the rep confirms that you can fax or mail the claim along with POTF then fax/mail the claim along with POTF. (Sometimes, the client wants to resubmit the claim instead of mailing or faxing the claim with POTF and waiting for TFL denial, and then sending the appeal. So, work as per the instructions.)",
+      "If there is no POTF and the claim was billed after TFL was crossed then the claim needs to be written off.",
+      "If the patient policy was inactive on DOS and the rep provided the details of another active policy of the patient then before resubmitting the claim update the correct policy ID given by the rep.",
+      "If the patient policy was inactive on DOS and no other active policy is available then release the claim to the patient if there is no other insurance available in the system.",
+      "If the other insurance is available in the system then check the eligibility for that insurance and if the policy is active on DOS then make that insurance as primary insurance and submit the claim."
+    ]
+  }
+}
