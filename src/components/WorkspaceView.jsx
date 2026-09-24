@@ -26,7 +26,9 @@ export default function WorkspaceView({
   const filteredKeys = Object.keys(scenarios).filter(key => scenarios[key].category === currentTab)
   
   // Safe default fallback check if selection gets deleted
-  const activeContent = scenarios[activeScenarioKey] && scenarios[activeScenarioKey].category === currentTab ? scenarios[activeScenarioKey] : (filteredKeys.length > 0 ? scenarios[filteredKeys[0]] : null)
+  const hasValidActive = scenarios && scenarios[activeScenarioKey] && scenarios[activeScenarioKey].category === currentTab
+  const fallbackKey = filteredKeys && filteredKeys.length > 0 ? filteredKeys[0] : null
+  const activeContent = hasValidActive ? scenarios[activeScenarioKey] : (fallbackKey ? scenarios[fallbackKey] : null)
 
   const handleCreateScenarioSubmit = (e) => {
     e.preventDefault()
