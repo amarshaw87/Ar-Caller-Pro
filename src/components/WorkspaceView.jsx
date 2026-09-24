@@ -2,15 +2,25 @@ import React, { useState } from 'react'
 import FormMatrix from './FormMatrix'
 import Scratchpad from './Scratchpad'
 
-export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey, setActiveScenarioKey, currentUser, onAddScenario, onDeleteScenario, onEditScenario, darkMode }) {
+export default function WorkspaceView({ 
+  currentTab, 
+  scenarios, 
+  activeScenarioKey, 
+  setActiveScenarioKey, 
+  currentUser, 
+  onAddScenario, 
+  onDeleteScenario, 
+  onEditScenario, 
+  darkMode 
+}) {
   const [showAddModal, setShowAddModal] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  
   const [newTitle, setNewTitle] = useState('')
   const [newAnalysis, setNewAnalysis] = useState('')
   const [newNotes, setNewNotes] = useState('')
   const [compiledScratchNote, setCompiledScratchNote] = useState('')
-  const [isEditing, setIsEditing] = useState(false)
-  const [editingId, setEditingId] = useState(null)
-
 
   // Dynamically filter database keys based on active main nav tab category
   const filteredKeys = Object.keys(scenarios).filter(key => scenarios[key].category === currentTab)
@@ -22,38 +32,36 @@ export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey
     e.preventDefault()
     if (!newTitle.trim()) return
 
-      const targetId = isEditing ? editingId : newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_')
-  
-  // Parse plaintext newlines smoothly into independent clean text list strings
-  const parsedAnalysis = newAnalysis.split('\n').filter(line => line.trim() !== '')
-  const parsedNotes = newNotes.split('\n').filter(line => line.trim() !== '')
+    const targetId = isEditing ? editingId : newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_')
+    
+    // Parse plaintext newlines smoothly into independent clean text list strings
+    const parsedAnalysis = newAnalysis.split('\n').filter(line => line.trim() !== '')
+    const parsedNotes = newNotes.split('\n').filter(line => line.trim() !== '')
 
-  const payload = {
-    id: targetId,
-    title: newTitle,
-    category: currentTab,
-    onCallAnalysis: parsedAnalysis,
-    flowchartImage: isEditing ? (scenarios[editingId]?.flowchartImage || 'placeholder-tree.png') : 'placeholder-tree.png',
-    importantNotesAndActions: parsedNotes
-  }
+    const payload = {
+      id: targetId,
+      title: newTitle,
+      category: currentTab,
+      onCallAnalysis: parsedAnalysis,
+      flowchartImage: isEditing ? (scenarios[editingId]?.flowchartImage || 'placeholder-tree.png') : 'placeholder-tree.png',
+      importantNotesAndActions: parsedNotes
+    }
 
-  if (isEditing) {
-    onEditScenario(editingId, payload)
-  } else {
-    onAddScenario(payload)
-  }
+    if (isEditing) {
+      onEditScenario(editingId, payload)
+    } else {
+      onAddScenario(payload)
+    }
 
-
-    // Reset admin configuration fields parameters
+    // Reset parameters cleanly
     setNewTitle('')
     setNewAnalysis('')
     setNewNotes('')
     setShowAddModal(false)
-    setActiveScenarioKey(payload.id)
     setIsEditing(false)
     setEditingId(null)
+    setActiveScenarioKey(payload.id)
     setCompiledScratchNote('')
-
   }
 
   // Define precise text title headers based on selected tab channels
@@ -61,7 +69,7 @@ export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey
     ? 'AR Scenario - Click on Specific Scenario' 
     : 'Denial Codes - Click on Denial Code'
 
-  return (
+    return (
     <div className="space-y-6">
       
       {/* 1. MASTER DISCOVERY BANNER SECTION */}
@@ -72,7 +80,14 @@ export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey
         </div>
         {currentUser.role === 'admin' && (
           <button 
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              setIsEditing(false)
+              setEditingId(null)
+              setNewTitle('')
+              setNewAnalysis('')
+              setNewNotes('')
+              setShowAddModal(true)
+            }}
             className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider whitespace-nowrap"
           >
             ➕ Add New Scenario
@@ -96,7 +111,7 @@ export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey
         </button>
       )}
 
-      {/* 3. DYNAMIC INDEX DIRECTORY INTERNET SUB-LINKS GRID */}
+            {/* 3. DYNAMIC INDEX DIRECTORY INTERNET SUB-LINKS GRID */}
       <div className="p-4 border border-gray-400/20 rounded bg-gray-500/5">
         <h3 className="text-xs font-bold uppercase tracking-wider mb-3 opacity-60">Completed Interactive Dialogue Modules</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -142,19 +157,20 @@ export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey
                   >
                     ❌
                   </button>
+                </div>
+              )}
             </div>
-          )
-        })
+          ))}
+        </div>
       </div>
-      
-      {/* 4. ADMIN MODAL DIALOGUE CREATOR PORTAL POP-UP */}
+
+            {/* 4. ADMIN MODAL DIALOGUE CREATOR PORTAL POP-UP */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <form onSubmit={handleCreateScenarioSubmit} className={`w-full max-w-2xl p-6 border rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto space-y-4 ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white' : 'bg-white border-gray-200 text-black'}`}>
             <h2 className="text-base font-bold uppercase tracking-wider text-emerald-500 pb-2 border-b border-gray-400/20">
               {isEditing ? '✏️ Edit Existing' : '➕ Add New Upcoming'} {currentTab} Dialogue Module
             </h2>
-
             
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold uppercase">Scenario Title / Code Name:*</label>
@@ -172,14 +188,29 @@ export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey
             </div>
 
             <div className="flex gap-4 pt-2 justify-end">
-              <button type="submit" className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded text-xs uppercase tracking-wider">🟢 Save & Publish Live</button>
-              <button type="button" onClick={() => setShowAddModal(false)} className="px-6 py-2 bg-zinc-500 text-white font-bold rounded text-xs uppercase tracking-wider">Cancel</button>
+              <button type="submit" className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded text-xs uppercase tracking-wider">
+                {isEditing ? '💾 Update Scenario' : '🟢 Save & Publish Live'}
+              </button>
+              <button 
+                type="button" 
+                onClick={() => {
+                  setShowAddModal(false)
+                  setIsEditing(false)
+                  setEditingId(null)
+                  setNewTitle('')
+                  setNewAnalysis('')
+                  setNewNotes('')
+                }} 
+                className="px-6 py-2 bg-zinc-500 text-white font-bold rounded text-xs uppercase tracking-wider"
+              >
+                Cancel
+              </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* 5. DYNAMICALLY LOADED SIMULATOR CONTROLS VIEW (Only if a scenario item is active) */}
+            {/* 5. DYNAMICALLY LOADED SIMULATOR CONTROLS VIEW (Only if a scenario item is active) */}
       {activeContent ? (
         <div className="space-y-8 mt-4 border-t border-gray-400/10 pt-6">
           
@@ -200,7 +231,7 @@ export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey
               src={`/images/${activeContent.flowchartImage}`} 
               alt={activeContent.title} 
               className="max-w-full h-auto rounded border border-gray-400/10"
-              onError={(e) => e.target.style.display = 'none'} 
+              onError={(e) => { e.target.style.display = 'none' }} 
             />
           </div>
 
@@ -236,3 +267,7 @@ export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey
     </div>
   )
 }
+
+
+
+
