@@ -100,7 +100,7 @@ export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey
       <div className="p-4 border border-gray-400/20 rounded bg-gray-500/5">
         <h3 className="text-xs font-bold uppercase tracking-wider mb-3 opacity-60">Completed Interactive Dialogue Modules</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    {filteredKeys.map((key) => (
+          {filteredKeys.map((key) => (
             <div
               key={key}
               className={`flex items-center justify-between text-left text-xs font-bold rounded border transition-all overflow-hidden ${activeScenarioKey === key ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-gray-500/10 border-gray-400/30 hover:bg-gray-500/20'}`}
@@ -142,11 +142,11 @@ export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey
                   >
                     ❌
                   </button>
-                </div>
-              )}
             </div>
-          ))}
-
+          )
+        })
+      </div>
+      
       {/* 4. ADMIN MODAL DIALOGUE CREATOR PORTAL POP-UP */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
