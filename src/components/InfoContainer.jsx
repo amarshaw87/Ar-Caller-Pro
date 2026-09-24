@@ -31,7 +31,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
           let splitIndex = line.indexOf(':')
           let delimiter = ':'
 
-          // If no colon is found, search for a tab key or triple-space block divider
+          // If no colon is found, search for a tab key or multiple spaces
           if (splitIndex === -1) {
             const spaceMatch = line.match(/\s{2,}/)
             if (spaceMatch) {
@@ -106,13 +106,13 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
   // Active validation check flags for managing interactive tables
   const isInteractiveTable = tabKey === 'INS PH#' || tabKey === 'TFL'
 
-    // Dynamically name table fields depending on active route categories
+  // Dynamically name table fields depending on active route categories
   const columnLeftName = tabKey === 'INS PH#' ? 'Insurance Company Payer' : 'Insurance Name'
   const columnRightName = tabKey === 'INS PH#' ? 'Primary Directory Phone Number' : 'TFL Threshold Limit'
   const actionButtonText = tabKey === 'INS PH#' ? '➕ Add New Ins Phone Number' : '➕ Add New TFL Rule'
   const formHeaderLabel = tabKey === 'INS PH#' ? 'Insurance Phone Record' : 'Timely Filing Rule'
 
-  return (
+    return (
     <div className="space-y-6">
       
       {/* Upper header section tracking separate edit action controls */}
@@ -286,3 +286,5 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
 }
 
 
+
+  
