@@ -217,7 +217,7 @@ export default function WorkspaceView({
         <div className="space-y-8 mt-4 border-t border-gray-400/10 pt-6">
           
           {/* A. READ-ONLY ANALYSIS GUIDE SCREEN PANEL */}
-                    <div>
+          <div>
             <h2 className="text-lg font-bold underline mb-3 text-center">On call analysis and Scenario:</h2>
             <div className="flex flex-col items-center text-center space-y-2 max-w-xl mx-auto text-sm leading-relaxed font-semibold">
               {activeContent.onCallAnalysis.map((bullet, idx) => {
@@ -246,7 +246,7 @@ export default function WorkspaceView({
                     {cleanText}
                   </div>
                 )
-              })
+              })}
             </div>
           </div>
 
