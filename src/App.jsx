@@ -165,7 +165,7 @@ export default function App() {
             currentUser={currentUser}
             onAddScenario={handleAddNewScenario}
             onDeleteScenario={handleDeleteScenario}
-            onEditScenario={handleeditScenario}
+            onEditScenario={handleEditScenario}
             darkMode={darkMode}
           />
         )}
