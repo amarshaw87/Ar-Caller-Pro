@@ -151,7 +151,10 @@ export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <form onSubmit={handleCreateScenarioSubmit} className={`w-full max-w-2xl p-6 border rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto space-y-4 ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white' : 'bg-white border-gray-200 text-black'}`}>
-            <h2 className="text-base font-bold uppercase tracking-wider text-emerald-500 pb-2 border-b border-gray-400/20">➕ Add New Upcoming {currentTab} Dialogue Module</h2>
+            <h2 className="text-base font-bold uppercase tracking-wider text-emerald-500 pb-2 border-b border-gray-400/20">
+              {isEditing ? '✏️ Edit Existing' : '➕ Add New Upcoming'} {currentTab} Dialogue Module
+            </h2>
+
             
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold uppercase">Scenario Title / Code Name:*</label>
