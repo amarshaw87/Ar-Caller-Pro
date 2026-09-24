@@ -217,36 +217,12 @@ export default function WorkspaceView({
         <div className="space-y-8 mt-4 border-t border-gray-400/10 pt-6">
           
           {/* A. READ-ONLY ANALYSIS GUIDE SCREEN PANEL */}
-          <div>
-            <h2 className="text-lg font-bold underline mb-3 text-center">On call analysis and Scenario:</h2>
-            <div className="flex flex-col items-center text-center space-y-2 max-w-xl mx-auto text-sm leading-relaxed font-semibold">
-              {activeContent.onCallAnalysis.map((bullet, idx) => {
-                const cleanText = bullet.startsWith('##') ? bullet.slice(2).trim() : bullet.trim()
-                const isHeader = bullet.startsWith('##')
-                const isArrow = cleanText === '↓' || cleanText === '↓️'
-
-                if (isHeader) {
-                  return (
-                    <div key={idx} className="text-base font-black text-blue-600 underline uppercase tracking-wide mt-2 mb-3">+
-                      {cleanText}
-                    </div>
-                  )
-                }
-
-                if (isArrow) {
-                  return (
-                    <div key={idx} className="text-base font-black text-gray-400 my-1">
-                      ↓
-                    </div>
-                  )
-                }
-
-                return (
-                  <div key={idx} className="w-full text-center py-1">
-                    {cleanText}
-                  </div>
-                )
-              })}
+          <div className="w-full flex flex-col items-center">
+            <h2 className="text-lg font-bold underline mb-4 text-center">On call analysis and Scenario:</h2>
+            <div className="w-full overflow-x-auto p-4 bg-gray-500/5 rounded border border-gray-400/10 flex justify-center">
+              <div className="whitespace-pre font-sans text-sm font-semibold leading-relaxed text-left tracking-wide inline-block min-w-max">
+                {activeContent.onCallAnalysis.join('\n')}
+              </div>
             </div>
           </div>
 
