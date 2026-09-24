@@ -2,12 +2,15 @@ import React, { useState } from 'react'
 import FormMatrix from './FormMatrix'
 import Scratchpad from './Scratchpad'
 
-export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey, setActiveScenarioKey, currentUser, onAddScenario, darkMode }) {
+export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey, setActiveScenarioKey, currentUser, onAddScenario, onDeleteScenario, onEditScenario, darkMode }) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newAnalysis, setNewAnalysis] = useState('')
   const [newNotes, setNewNotes] = useState('')
   const [compiledScratchNote, setCompiledScratchNote] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+
 
   // Dynamically filter database keys based on active main nav tab category
   const filteredKeys = Object.keys(scenarios).filter(key => scenarios[key].category === currentTab)
@@ -19,28 +22,38 @@ export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey
     e.preventDefault()
     if (!newTitle.trim()) return
 
-    const generatedId = newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_')
-    
-    // Parse plaintext newlines smoothly into independent clean text list strings
-    const parsedAnalysis = newAnalysis.split('\n').filter(line => line.trim() !== '')
-    const parsedNotes = newNotes.split('\n').filter(line => line.trim() !== '')
+      const targetId = isEditing ? editingId : newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_')
+  
+  // Parse plaintext newlines smoothly into independent clean text list strings
+  const parsedAnalysis = newAnalysis.split('\n').filter(line => line.trim() !== '')
+  const parsedNotes = newNotes.split('\n').filter(line => line.trim() !== '')
 
-    onAddScenario({
-      id: generatedId,
-      title: newTitle,
-      category: currentTab,
-      onCallAnalysis: parsedAnalysis,
-      flowchartImage: 'placeholder-tree.png',
-      importantNotesAndActions: parsedNotes
-    })
+  const payload = {
+    id: targetId,
+    title: newTitle,
+    category: currentTab,
+    onCallAnalysis: parsedAnalysis,
+    flowchartImage: isEditing ? (scenarios[editingId]?.flowchartImage || 'placeholder-tree.png') : 'placeholder-tree.png',
+    importantNotesAndActions: parsedNotes
+  }
+
+  if (isEditing) {
+    onEditScenario(editingId, payload)
+  } else {
+    onAddScenario(payload)
+  }
+
 
     // Reset admin configuration fields parameters
     setNewTitle('')
     setNewAnalysis('')
     setNewNotes('')
     setShowAddModal(false)
-    setActiveScenarioKey(generatedId)
+    setActiveScenarioKey(payload.id)
+    setIsEditing(false)
+    setEditingId(null)
     setCompiledScratchNote('')
+
   }
 
   // Define precise text title headers based on selected tab channels
@@ -87,17 +100,52 @@ export default function WorkspaceView({ currentTab, scenarios, activeScenarioKey
       <div className="p-4 border border-gray-400/20 rounded bg-gray-500/5">
         <h3 className="text-xs font-bold uppercase tracking-wider mb-3 opacity-60">Completed Interactive Dialogue Modules</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          {filteredKeys.map((key) => (
-            <button
+                    {filteredKeys.map((key) => (
+            <div
               key={key}
-              onClick={() => { setActiveScenarioKey(key); setCompiledScratchNote(''); }}
-              className={`p-3 text-left text-xs font-bold rounded border transition-all truncate ${activeScenarioKey === key ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-gray-500/10 border-gray-400/30 hover:bg-gray-500/20'}`}
+              className={`flex items-center justify-between text-left text-xs font-bold rounded border transition-all overflow-hidden ${activeScenarioKey === key ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-gray-500/10 border-gray-400/30 hover:bg-gray-500/20'}`}
             >
-              • {scenarios[key].title}
-            </button>
+              {/* Primary Scenario Select Click Target */}
+              <button
+                type="button"
+                onClick={() => { setActiveScenarioKey(key); setCompiledScratchNote(''); }}
+                className="p-3 text-left flex-grow truncate outline-none"
+              >
+                • {scenarios[key].title}
+              </button>
+
+              {/* Administrative Mutation Operations Area */}
+              {currentUser.role === 'admin' && (
+                <div className="flex items-center pr-2 gap-1.5 shrink-0">
+                  {/* EDIT UTILITY */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditing(true)
+                      setEditingId(key)
+                      setNewTitle(scenarios[key].title)
+                      setNewAnalysis(scenarios[key].onCallAnalysis.join('\n'))
+                      setNewNotes(scenarios[key].importantNotesAndActions.join('\n'))
+                      setShowAddModal(true)
+                    }}
+                    className="p-1 text-[10px] bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                    title="Edit Scenario"
+                  >
+                    ✏️
+                  </button>
+                  {/* DELETE UTILITY */}
+                  <button
+                    type="button"
+                    onClick={() => onDeleteScenario(key)}
+                    className="p-1 text-[10px] bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                    title="Delete Scenario"
+                  >
+                    ❌
+                  </button>
+                </div>
+              )}
+            </div>
           ))}
-        </div>
-      </div>
 
       {/* 4. ADMIN MODAL DIALOGUE CREATOR PORTAL POP-UP */}
       {showAddModal && (
