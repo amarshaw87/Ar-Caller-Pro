@@ -119,10 +119,15 @@ export default function App() {
         darkMode={darkMode} 
         setDarkMode={setDarkMode} 
         currentTab={currentTab} 
-        setCurrentTab={setCurrentTab} 
+        setCurrentTab={(tabName) => {
+          setCurrentTab(tabName);
+          // Automatically clear stale keys to prevent tab category cross-over crashes
+          setActiveScenarioKey('');
+        }} 
         currentUser={currentUser}
         onLogout={() => { setCurrentUser(null); setCurrentTab('HOME'); }}
       />
+
 
       {/* CORE WORKSPACE APPLICATION CANVAS CONTAINER */}
       <main className="max-w-6xl w-full mx-auto p-4 md:p-6 flex-grow">
