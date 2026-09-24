@@ -15,7 +15,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
   const [inputPayer, setInputPayer] = useState('')
   const [inputNumber, setInputNumber] = useState('')
 
-  // Sync state modifications smoothly when moving between AR and RCM tabs
+  // Sync state modifications smoothly when moving between tabs
   useEffect(() => {
     setEditTitle(pageData.title)
     setEditBody(pageData.body)
@@ -23,15 +23,27 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     setShowAddForm(false)
     setEditingRecordIndex(null)
 
-    // Automatically parse the insurance layout by line breaks and colon keys
-    if (tabKey === 'INS PH#' && pageData.body) {
+    // Parse data dynamically if viewing either the Insurance List or TFL Sheet tabs
+    if ((tabKey === 'INS PH#' || tabKey === 'TFL') && pageData.body) {
       try {
         const records = pageData.body.split('\n').filter(l => l.trim()).map(line => {
-          const colonIndex = line.indexOf(':')
-          if (colonIndex !== -1) {
+          // Look for a colon divider first
+          let splitIndex = line.indexOf(':')
+          let delimiter = ':'
+
+          // If no colon is found, search for a tab key or triple-space block divider
+          if (splitIndex === -1) {
+            const spaceMatch = line.match(/\s{2,}/)
+            if (spaceMatch) {
+              splitIndex = spaceMatch.index
+              delimiter = spaceMatch[0]
+            }
+          }
+
+          if (splitIndex !== -1) {
             return {
-              payer: line.substring(0, colonIndex).trim(),
-              number: line.substring(colonIndex + 1).trim()
+              payer: line.substring(0, splitIndex).trim(),
+              number: line.substring(splitIndex + delimiter.length).trim()
             }
           }
           return { payer: line.trim(), number: 'N/A' }
@@ -45,10 +57,12 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     }
   }, [tabKey, data])
 
-    // Serializes table actions back to the raw string format with colon dividers
+    // Serializes table actions back to the raw string format with custom tab dividers
   const saveRecordsToDatabase = (updatedRecords) => {
+    // Preserve colon formatting for INS PH#, use clean spacing tabs for TFL columns
+    const separator = tabKey === 'INS PH#' ? ' : ' : '\t\t'
     const serializedBody = updatedRecords
-      .map(r => `${r.payer} : ${r.number}`)
+      .map(r => `${r.payer}${separator}${r.number}`)
       .join('\n')
     onUpdateText(tabKey, pageData.title, serializedBody)
   }
@@ -89,20 +103,28 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     setIsEditing(false)
   }
 
-  const isInsuranceMatrixView = tabKey === 'INS PH#'
+  // Active validation check flags for managing interactive tables
+  const isInteractiveTable = tabKey === 'INS PH#' || tabKey === 'TFL'
 
-    return (
+    // Dynamically name table fields depending on active route categories
+  const columnLeftName = tabKey === 'INS PH#' ? 'Insurance Company Payer' : 'Insurance Name'
+  const columnRightName = tabKey === 'INS PH#' ? 'Primary Directory Phone Number' : 'TFL Threshold Limit'
+  const actionButtonText = tabKey === 'INS PH#' ? '➕ Add New Ins Phone Number' : '➕ Add New TFL Rule'
+  const formHeaderLabel = tabKey === 'INS PH#' ? 'Insurance Phone Record' : 'Timely Filing Rule'
+
+  return (
     <div className="space-y-6">
       
       {/* Upper header section tracking separate edit action controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
-        <div className="text-xs font-semibold opacity-70 tracking-wide uppercase">
-          HOME &gt; KEY ASSETS &gt; <span className="underline font-bold">{pageData.title}</span>
+        <div>
+          <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">{pageData.title}</h1>
+          <p className="text-xs font-semibold text-red-500 mt-1">🔴 If you want to modify any items on the list below, use the administrative action panels.</p>
         </div>
         
         {currentUser?.role === 'admin' && !isEditing && (
           <div className="flex items-center gap-2">
-            {isInsuranceMatrixView ? (
+            {isInteractiveTable ? (
               <button
                 onClick={() => {
                   setEditingRecordIndex(null)
@@ -110,9 +132,9 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
                   setInputNumber('')
                   setShowAddForm(!showAddForm)
                 }}
-                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider"
+                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider whitespace-nowrap"
               >
-                {showAddForm ? '❌ Close Input Form' : '➕ Add New Ins Phone Number'}
+                {showAddForm ? '❌ Close Input Form' : actionButtonText}
               </button>
             ) : (
               <button
@@ -126,16 +148,16 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
         )}
       </div>
 
-      {/* DYNAMIC FORMS FOR MANAGEMENT ACTIONS */}
-      {isInsuranceMatrixView && showAddForm && (
+      {/* UNIVERSAL ADMINISTRATIVE FORM MODAL INJECTION PANEL */}
+      {isInteractiveTable && showAddForm && (
         <form onSubmit={handleAddSubmit} className="p-4 border border-gray-400/20 rounded bg-gray-500/5 max-w-xl space-y-3">
           <h4 className="text-xs font-black uppercase text-emerald-500 tracking-wider">
-            {editingRecordIndex !== null ? '✏️ Edit Existing Payer Listing' : '➕ Append New Insurance Record'}
+            {editingRecordIndex !== null ? `✏️ Edit Existing ${formHeaderLabel}` : `➕ Append New ${formHeaderLabel}`}
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input 
               type="text" 
-              placeholder="Insurance Company Name (e.g. AETNA)" 
+              placeholder="Insurance/Carrier Title" 
               value={inputPayer} 
               onChange={e => setInputPayer(e.target.value)} 
               required 
@@ -143,7 +165,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
             />
             <input 
               type="text" 
-              placeholder="Contact Line (e.g. 800-555-1212)" 
+              placeholder={tabKey === 'INS PH#' ? 'e.g. 800-555-1212' : 'e.g. 180 days / 1 year'} 
               value={inputNumber} 
               onChange={e => setInputNumber(e.target.value)} 
               required 
@@ -161,14 +183,14 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
         </form>
       )}
 
-      {/* CONDITIONAL RENDER INTERACTIVE TABLE VS FLAT TEXT PAGE FRAME */}
-      {isInsuranceMatrixView ? (
+      {/* INTERACTIVE TABLE GRID CONTAINER FRAME */}
+      {isInteractiveTable ? (
         <div className="w-full overflow-x-auto border border-gray-400/20 rounded-lg shadow-sm bg-gray-500/5">
           <table className={`w-full text-left border-collapse text-xs ${darkMode ? 'text-zinc-300' : 'text-zinc-700'}`}>
             <thead>
               <tr className={`border-b border-gray-400/20 font-black uppercase tracking-wider ${darkMode ? 'bg-zinc-900 text-white' : 'bg-gray-100 text-black'}`}>
-                <th className="p-3">Insurance Company Payer</th>
-                <th className="p-3">Primary Directory Phone Number</th>
+                <th className="p-3">{columnLeftName}</th>
+                <th className="p-3">{columnRightName}</th>
                 {currentUser?.role === 'admin' && <th className="p-3 text-center w-24">Actions</th>}
               </tr>
             </thead>
@@ -177,7 +199,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
                 phoneRecords.map((rec, index) => (
                   <tr key={index} className={`transition-colors ${darkMode ? 'hover:bg-zinc-900/40' : 'hover:bg-gray-50/40'}`}>
                     <td className="p-3 font-bold text-emerald-500 tracking-wide">{rec.payer}</td>
-                    <td className="p-3 font-mono font-bold tracking-widest">{rec.number}</td>
+                    <td className="p-3 font-mono font-bold tracking-wide">{rec.number}</td>
                     {currentUser?.role === 'admin' && (
                       <td className="p-3 flex items-center justify-center gap-2">
                         <button
@@ -208,7 +230,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
               ) : (
                 <tr>
                   <td colSpan={currentUser?.role === 'admin' ? 3 : 2} className="p-6 text-center italic opacity-50">
-                    No active telephone listings compiled inside storage memory.
+                    No active listings found inside database storage parameters.
                   </td>
                 </tr>
               )}
