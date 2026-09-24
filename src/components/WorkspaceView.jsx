@@ -217,13 +217,37 @@ export default function WorkspaceView({
         <div className="space-y-8 mt-4 border-t border-gray-400/10 pt-6">
           
           {/* A. READ-ONLY ANALYSIS GUIDE SCREEN PANEL */}
-          <div>
-            <h2 className="text-lg font-bold underline mb-3">On call analysis and Scenario:</h2>
-            <ul className="list-disc pl-6 space-y-2 text-sm leading-relaxed">
-              {activeContent.onCallAnalysis.map((bullet, idx) => (
-                <li key={idx} dangerouslySetInnerHTML={{ __html: bullet }} />
-              ))}
-            </ul>
+                    <div>
+            <h2 className="text-lg font-bold underline mb-3 text-center">On call analysis and Scenario:</h2>
+            <div className="flex flex-col items-center text-center space-y-2 max-w-xl mx-auto text-sm leading-relaxed font-semibold">
+              {activeContent.onCallAnalysis.map((bullet, idx) => {
+                const cleanText = bullet.replace(/^##\s*/, '').trim()
+                const isHeader = bullet.startsWith('##')
+                const isArrow = cleanText === '↓' || cleanText === '↓️'
+
+                if (isHeader) {
+                  return (
+                    <div key={idx} className="text-base font-black text-blue-600 underline uppercase tracking-wide mt-2 mb-3">
+                      {cleanText}
+                    </div>
+                  )
+                }
+
+                if (isArrow) {
+                  return (
+                    <div key={idx} className="text-base font-black text-gray-400 my-1">
+                      ↓
+                    </div>
+                  )
+                }
+
+                return (
+                  <div key={idx} className="w-full text-center py-1">
+                    {cleanText}
+                  </div>
+                )
+              })
+            </div>
           </div>
 
           {/* B. GRAPHIC VISUALIZATION SCREEN CONTAINER */}
