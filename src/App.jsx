@@ -57,6 +57,34 @@ export default function App() {
     localStorage.setItem('ar_scenarios', JSON.stringify(updated))
   }
 
+    // Delete an existing scenario dynamically from the active state cache
+  const handleDeleteScenario = (idToDelete) => {
+    if (window.confirm("Are you sure you want to permanently delete this dialogue module?")) {
+      const updated = { ...scenarios }
+      delete updated[idToDelete]
+      setScenarios(updated)
+      localStorage.setItem('ar_scenarios', JSON.stringify(updated))
+      
+      // Automatically switch to another valid remaining key so the UI doesn't crash
+      const remainingKeys = Object.keys(updated)
+      if (remainingKeys.length > 0) {
+        setActiveScenarioKey(remainingKeys[0])
+      } else {
+        setActiveScenarioKey('')
+      }
+    }
+  }
+
+  // Edit and overwrite parameters inside an existing configuration scenario
+  const handleEditScenario = (idToEdit, updatedObj) => {
+    const updated = { ...scenarios, [idToEdit]: updatedObj }
+    setScenarios(updated)
+    localStorage.setItem('ar_scenarios', JSON.stringify(updated))
+  }
+
+
+  
+
   const handleAddNewPhone = (newStr) => {
     const updated = [...insurancePh, newStr].sort((a, b) => a.localeCompare(b))
     setInsurancePh(updated)
