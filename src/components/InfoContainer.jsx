@@ -15,6 +15,12 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
   const [inputPayer, setInputPayer] = useState('')
   const [inputNumber, setInputNumber] = useState('')
 
+  // Flexible detection flags that don't care about precise capitalization or underscores
+  const normalizedKey = String(tabKey || '').toUpperCase()
+  const isInsuranceMatrixView = normalizedKey.includes('PH') || normalizedKey.includes('INS')
+  const isTflMatrixView = normalizedKey.includes('TFL')
+  const isInteractiveTable = isInsuranceMatrixView || isTflMatrixView
+
   // Sync state modifications smoothly when moving between tabs
   useEffect(() => {
     setEditTitle(pageData.title)
@@ -23,15 +29,15 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     setShowAddForm(false)
     setEditingRecordIndex(null)
 
-    // Parse data dynamically if viewing either the Insurance List or TFL Sheet tabs
-    if ((tabKey === 'INS PH#' || tabKey === 'TFL') && pageData.body) {
+    // Parse data dynamically if viewing either an Insurance or TFL table
+    if (isInteractiveTable && pageData.body) {
       try {
         const records = pageData.body.split('\n').filter(l => l.trim()).map(line => {
           // Look for a colon divider first
           let splitIndex = line.indexOf(':')
           let delimiter = ':'
 
-          // If no colon is found, search for a tab key or multiple spaces
+          // If no colon is found, search for a tab key or double-space block divider
           if (splitIndex === -1) {
             const spaceMatch = line.match(/\s{2,}/)
             if (spaceMatch) {
@@ -55,12 +61,12 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     } else {
       setPhoneRecords([])
     }
-  }, [tabKey, data])
+  }, [tabKey, data, isInteractiveTable])
 
-    // Serializes table actions back to the raw string format with custom tab dividers
+    // Serializes table actions back to the raw string format with correct dividers
   const saveRecordsToDatabase = (updatedRecords) => {
-    // Preserve colon formatting for INS PH#, use clean spacing tabs for TFL columns
-    const separator = tabKey === 'INS PH#' ? ' : ' : '\t\t'
+    // Keep clean colon dividers for Insurance, use distinct spaces for TFL rows
+    const separator = isInsuranceMatrixView ? ' : ' : '                  '
     const serializedBody = updatedRecords
       .map(r => `${r.payer}${separator}${r.number}`)
       .join('\n')
@@ -103,14 +109,11 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     setIsEditing(false)
   }
 
-  // Active validation check flags for managing interactive tables
-  const isInteractiveTable = tabKey === 'INS PH#' || tabKey === 'TFL'
-
-  // Dynamically name table fields depending on active route categories
-  const columnLeftName = tabKey === 'INS PH#' ? 'Insurance Company Payer' : 'Insurance Name'
-  const columnRightName = tabKey === 'INS PH#' ? 'Primary Directory Phone Number' : 'TFL Threshold Limit'
-  const actionButtonText = tabKey === 'INS PH#' ? '➕ Add New Ins Phone Number' : '➕ Add New TFL Rule'
-  const formHeaderLabel = tabKey === 'INS PH#' ? 'Insurance Phone Record' : 'Timely Filing Rule'
+  // Dynamically name layout text depending on active route categories
+  const columnLeftName = isInsuranceMatrixView ? 'Insurance Company Payer' : 'Insurance Name'
+  const columnRightName = isInsuranceMatrixView ? 'Primary Directory Phone Number' : 'TFL Threshold Limit'
+  const actionButtonText = isInsuranceMatrixView ? '➕ Add New Ins Phone Number' : '➕ Add New TFL Rule'
+  const formHeaderLabel = isInsuranceMatrixView ? 'Insurance Phone Record' : 'Timely Filing Rule'
 
     return (
     <div className="space-y-6">
@@ -148,7 +151,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
         )}
       </div>
 
-      {/* UNIVERSAL ADMINISTRATIVE FORM MODAL INJECTION PANEL */}
+      {/* UNIVERSAL ADMINISTRATIVE FORM PANEL */}
       {isInteractiveTable && showAddForm && (
         <form onSubmit={handleAddSubmit} className="p-4 border border-gray-400/20 rounded bg-gray-500/5 max-w-xl space-y-3">
           <h4 className="text-xs font-black uppercase text-emerald-500 tracking-wider">
@@ -165,7 +168,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
             />
             <input 
               type="text" 
-              placeholder={tabKey === 'INS PH#' ? 'e.g. 800-555-1212' : 'e.g. 180 days / 1 year'} 
+              placeholder={isInsuranceMatrixView ? 'e.g. 800-555-1212' : 'e.g. 180 days / 1 year'} 
               value={inputNumber} 
               onChange={e => setInputNumber(e.target.value)} 
               required 
@@ -183,7 +186,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
         </form>
       )}
 
-      {/* INTERACTIVE TABLE GRID CONTAINER FRAME */}
+      {/* INTERACTIVE TABLE GRID CONTAINER */}
       {isInteractiveTable ? (
         <div className="w-full overflow-x-auto border border-gray-400/20 rounded-lg shadow-sm bg-gray-500/5">
           <table className={`w-full text-left border-collapse text-xs ${darkMode ? 'text-zinc-300' : 'text-zinc-700'}`}>
