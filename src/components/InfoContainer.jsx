@@ -6,12 +6,82 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
   const [editTitle, setEditTitle] = useState(pageData.title)
   const [editBody, setEditBody] = useState(pageData.body)
 
+  // Table management states for data records
+  const [phoneRecords, setPhoneRecords] = useState([])
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [editingRecordIndex, setEditingRecordIndex] = useState(null)
+
+  // Mutation form input parameters
+  const [inputPayer, setInputPayer] = useState('')
+  const [inputNumber, setInputNumber] = useState('')
+
   // Sync state modifications smoothly when moving between AR and RCM tabs
   useEffect(() => {
     setEditTitle(pageData.title)
     setEditBody(pageData.body)
     setIsEditing(false)
+    setShowAddForm(false)
+    setEditingRecordIndex(null)
+
+    // Automatically parse the insurance layout by line breaks and colon keys
+    if (tabKey === 'INS PH#' && pageData.body) {
+      try {
+        const records = pageData.body.split('\n').filter(l => l.trim()).map(line => {
+          const colonIndex = line.indexOf(':')
+          if (colonIndex !== -1) {
+            return {
+              payer: line.substring(0, colonIndex).trim(),
+              number: line.substring(colonIndex + 1).trim()
+            }
+          }
+          return { payer: line.trim(), number: 'N/A' }
+        })
+        setPhoneRecords(records)
+      } catch (err) {
+        setPhoneRecords([])
+      }
+    } else {
+      setPhoneRecords([])
+    }
   }, [tabKey, data])
+
+    // Serializes table actions back to the raw string format with colon dividers
+  const saveRecordsToDatabase = (updatedRecords) => {
+    const serializedBody = updatedRecords
+      .map(r => `${r.payer} : ${r.number}`)
+      .join('\n')
+    onUpdateText(tabKey, pageData.title, serializedBody)
+  }
+
+  const handleAddSubmit = (e) => {
+    e.preventDefault()
+    if (!inputPayer.trim() || !inputNumber.trim()) return
+
+    const newRecord = { payer: inputPayer.trim(), number: inputNumber.trim() }
+    let updated = []
+
+    if (editingRecordIndex !== null) {
+      updated = [...phoneRecords]
+      updated[editingRecordIndex] = newRecord
+    } else {
+      updated = [...phoneRecords, newRecord]
+    }
+
+    setPhoneRecords(updated)
+    saveRecordsToDatabase(updated)
+
+    // Clean up input fields
+    setInputPayer('')
+    setInputNumber('')
+    setShowAddForm(false)
+    setEditingRecordIndex(null)
+  }
+
+  const handleDeleteRecord = (indexToDelete) => {
+    const updated = phoneRecords.filter((_, idx) => idx !== indexToDelete)
+    setPhoneRecords(updated)
+    saveRecordsToDatabase(updated)
+  }
 
   const handleFormSave = (e) => {
     e.preventDefault()
@@ -19,7 +89,9 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     setIsEditing(false)
   }
 
-  return (
+  const isInsuranceMatrixView = tabKey === 'INS PH#'
+
+    return (
     <div className="space-y-6">
       
       {/* Upper header section tracking separate edit action controls */}
@@ -28,17 +100,122 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
           HOME &gt; KEY ASSETS &gt; <span className="underline font-bold">{pageData.title}</span>
         </div>
         
-        {currentUser.role === 'admin' && !isEditing && (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider"
-          >
-            ✏️ Edit Page Text
-          </button>
+        {currentUser?.role === 'admin' && !isEditing && (
+          <div className="flex items-center gap-2">
+            {isInsuranceMatrixView ? (
+              <button
+                onClick={() => {
+                  setEditingRecordIndex(null)
+                  setInputPayer('')
+                  setInputNumber('')
+                  setShowAddForm(!showAddForm)
+                }}
+                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider"
+              >
+                {showAddForm ? '❌ Close Input Form' : '➕ Add New Ins Phone Number'}
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider"
+              >
+                ✏️ Edit Page Text
+              </button>
+            )}
+          </div>
         )}
       </div>
 
-      {isEditing ? (
+      {/* DYNAMIC FORMS FOR MANAGEMENT ACTIONS */}
+      {isInsuranceMatrixView && showAddForm && (
+        <form onSubmit={handleAddSubmit} className="p-4 border border-gray-400/20 rounded bg-gray-500/5 max-w-xl space-y-3">
+          <h4 className="text-xs font-black uppercase text-emerald-500 tracking-wider">
+            {editingRecordIndex !== null ? '✏️ Edit Existing Payer Listing' : '➕ Append New Insurance Record'}
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input 
+              type="text" 
+              placeholder="Insurance Company Name (e.g. AETNA)" 
+              value={inputPayer} 
+              onChange={e => setInputPayer(e.target.value)} 
+              required 
+              className={`p-2 text-xs border rounded outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}
+            />
+            <input 
+              type="text" 
+              placeholder="Contact Line (e.g. 800-555-1212)" 
+              value={inputNumber} 
+              onChange={e => setInputNumber(e.target.value)} 
+              required 
+              className={`p-2 text-xs border rounded outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}
+            />
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button type="submit" className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded text-[10px] uppercase tracking-wide">
+              {editingRecordIndex !== null ? 'Update Listing' : 'Publish Row'}
+            </button>
+            <button type="button" onClick={() => setShowAddForm(false)} className="px-4 py-1.5 bg-zinc-500 text-white font-bold rounded text-[10px] uppercase tracking-wide">
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* CONDITIONAL RENDER INTERACTIVE TABLE VS FLAT TEXT PAGE FRAME */}
+      {isInsuranceMatrixView ? (
+        <div className="w-full overflow-x-auto border border-gray-400/20 rounded-lg shadow-sm bg-gray-500/5">
+          <table className={`w-full text-left border-collapse text-xs ${darkMode ? 'text-zinc-300' : 'text-zinc-700'}`}>
+            <thead>
+              <tr className={`border-b border-gray-400/20 font-black uppercase tracking-wider ${darkMode ? 'bg-zinc-900 text-white' : 'bg-gray-100 text-black'}`}>
+                <th className="p-3">Insurance Company Payer</th>
+                <th className="p-3">Primary Directory Phone Number</th>
+                {currentUser?.role === 'admin' && <th className="p-3 text-center w-24">Actions</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-400/10">
+              {phoneRecords.length > 0 ? (
+                phoneRecords.map((rec, index) => (
+                  <tr key={index} className={`transition-colors ${darkMode ? 'hover:bg-zinc-900/40' : 'hover:bg-gray-50/40'}`}>
+                    <td className="p-3 font-bold text-emerald-500 tracking-wide">{rec.payer}</td>
+                    <td className="p-3 font-mono font-bold tracking-widest">{rec.number}</td>
+                    {currentUser?.role === 'admin' && (
+                      <td className="p-3 flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingRecordIndex(index)
+                            setInputPayer(rec.payer)
+                            setInputNumber(rec.number)
+                            setShowAddForm(true)
+                          }}
+                          className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-[10px]"
+                          title="Edit Row Entry"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteRecord(index)}
+                          className="p-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-[10px]"
+                          title="Delete Row Entry"
+                        >
+                          ❌
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={currentUser?.role === 'admin' ? 3 : 2} className="p-6 text-center italic opacity-50">
+                    No active telephone listings compiled inside storage memory.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : isEditing ? (
         /* Protected Administrative Editor Entry Layout Window */
         <form onSubmit={handleFormSave} className="p-6 border border-gray-400/30 rounded bg-gray-500/5 space-y-4 max-w-3xl">
           <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-500">🛡️ Admin Access: Edit Knowledge Content Frame</h3>
@@ -85,3 +262,5 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     </div>
   )
 }
+
+
