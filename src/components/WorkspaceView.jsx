@@ -221,13 +221,13 @@ export default function WorkspaceView({
             <h2 className="text-lg font-bold underline mb-3 text-center">On call analysis and Scenario:</h2>
             <div className="flex flex-col items-center text-center space-y-2 max-w-xl mx-auto text-sm leading-relaxed font-semibold">
               {activeContent.onCallAnalysis.map((bullet, idx) => {
-                const cleanText = bullet.replace(/^##\s*/, '').trim()
+                const cleanText = bullet.startsWith('##') ? bullet.slice(2).trim() : bullet.trim()
                 const isHeader = bullet.startsWith('##')
                 const isArrow = cleanText === '↓' || cleanText === '↓️'
 
                 if (isHeader) {
                   return (
-                    <div key={idx} className="text-base font-black text-blue-600 underline uppercase tracking-wide mt-2 mb-3">
+                    <div key={idx} className="text-base font-black text-blue-600 underline uppercase tracking-wide mt-2 mb-3">+
                       {cleanText}
                     </div>
                   )
