@@ -16,7 +16,10 @@ import Footer from './components/Footer'
 export default function App() {
   // Global React App Application States
   const [darkMode, setDarkMode] = useState(false)
-  const [currentUser, setCurrentUser] = useState(null) // Holds credentials & role state
+  const [currentUser, setCurrentUser] = useState(() => {
+    return JSON.parse(sessionStorage.getItem('ar_active_user')) || null
+  })
+
   const [currentTab, setCurrentTab] = useState('HOME') // Tracks active top navigation tab
   const [activeScenarioKey, setActiveScenarioKey] = useState('no_claim_on_file')
 
