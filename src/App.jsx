@@ -104,7 +104,7 @@ export default function App() {
   if (!currentUser) {
     return (
       <div className={`min-h-screen flex flex-col justify-center items-center transition-colors duration-300 ${darkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
-        <LoginGateway onLoginSuccess={(userObj) => setCurrentUser(userObj)} darkMode={darkMode} setDarkMode={setDarkMode} />
+        <LoginGateway onLoginSuccess={(userObj) => (setCurrentUser(userObj), sessionStorage.setItem('ar_active_user', JSON.stringify(userObj)))} darkMode={darkMode} setDarkMode={setDarkMode} />
       </div>
     )
   }
