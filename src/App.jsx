@@ -20,21 +20,21 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState('HOME') // Tracks active top navigation tab
   const [activeScenarioKey, setActiveScenarioKey] = useState('no_claim_on_file')
 
-  // Dynamic Live Sync Databases state machines fueled initially by our text files
+   // Dynamic Live Sync Databases state machines fueled initially by our text files
   const [scenarios, setScenarios] = useState(baseScenarios)
-  const [insurancePh, setInsurancePh] = useState(baseInsurancePh.records)
-  const [tflRules, setTflRules] = useState(baseTflRules.rules)
+  const [insurancePh, setInsurancePh] = useState(baseInsurancePh.records || baseInsurancePh) 
+  const [tflRules, setTflRules] = useState(baseTflRules.rules || baseTflRules)               
   const [contentData, setContentData] = useState(baseContentData)
-      // Load any previously saved admin modifications securely from browser memory on startup
+
+  // Load any previously saved admin modifications securely from browser memory on startup
   useEffect(() => {
-    // ⚠️ FORCE RESET: This clears out the old, empty database layout stuck on your mobile phone
-    localStorage.clear(); 
+    // ⚠️ REMOVED localStorage.clear(); so your updates persist safely!
 
     const cachedScenarios = localStorage.getItem('ar_scenarios')
     const cachedInsurancePh = localStorage.getItem('ar_insurance_ph')
     const cachedTflRules = localStorage.getItem('ar_tfl_rules')
     const cachedContentData = localStorage.getItem('ar_content_data')
-
+    
     // Parse the data structures carefully to handle both objects and raw arrays
     if (cachedScenarios) setScenarios(JSON.parse(cachedScenarios))
     if (cachedInsurancePh) {
