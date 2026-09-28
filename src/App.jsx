@@ -122,7 +122,8 @@ export default function App() {
           setActiveScenarioKey('');
         }} 
         currentUser={currentUser}
-        onLogout={() => { setCurrentUser(null); setCurrentTab('HOME'); }}
+        onLogout={() => (setCurrentUser(null), setCurrentTab('HOME'), sessionStorage.removeItem('ar_active_user'))}
+
       />
 
 
