@@ -25,16 +25,26 @@ export default function App() {
   const [insurancePh, setInsurancePh] = useState(baseInsurancePh.records)
   const [tflRules, setTflRules] = useState(baseTflRules.rules)
   const [contentData, setContentData] = useState(baseContentData)
-    // Load any previously saved admin modifications securely from browser memory on startup
+      // Load any previously saved admin modifications securely from browser memory on startup
   useEffect(() => {
+    // ⚠️ FORCE RESET: This clears out the old, empty database layout stuck on your mobile phone
+    localStorage.clear(); 
+
     const cachedScenarios = localStorage.getItem('ar_scenarios')
     const cachedInsurancePh = localStorage.getItem('ar_insurance_ph')
     const cachedTflRules = localStorage.getItem('ar_tfl_rules')
     const cachedContentData = localStorage.getItem('ar_content_data')
 
+    // Parse the data structures carefully to handle both objects and raw arrays
     if (cachedScenarios) setScenarios(JSON.parse(cachedScenarios))
-    if (cachedInsurancePh) setInsurancePh(JSON.parse(cachedInsurancePh))
-    if (cachedTflRules) setTflRules(JSON.parse(cachedTflRules))
+    if (cachedInsurancePh) {
+      const parsed = JSON.parse(cachedInsurancePh);
+      setInsurancePh(parsed.records || parsed);
+    }
+    if (cachedTflRules) {
+      const parsed = JSON.parse(cachedTflRules);
+      setTflRules(parsed.rules || parsed);
+    }
     if (cachedContentData) setContentData(JSON.parse(cachedContentData))
   }, [])
 
