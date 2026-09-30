@@ -6,13 +6,9 @@
     "onCallAnalysis": [
       "When getting the status as no claim on file, always check the clearinghouse whether the claim was sent to insurance or it is rejected, if it is rejected then work as per the rejection.",
       "There could be more than one CPTs billed on the same DOS or two DOS could be billed in a single claim form, so always open the claim form and provide the DOS range and total billed amount as mentioned in the claim form.",
-      "POTF stands for Proof of timely filing.",
-      "You can consider the below proof as POTF if these occurred within TFL.",
-      "• An initial filed claim to the same insurance which is not received by the payer.",
-      "• Initially rejected claims.",
-      "• Initial billing to any other payer."
+      "POTF stands for Proof of timely filing. You can consider the below proof as POTF if these occurred within TFL: An initial filed claim to the same insurance which is not received by the payer. Initially rejected claims. Initial billing to any other payer."
     ],
-    "flowchartImage": "no_claim_on_file.png",
+    "flowchartCodeText": "                                      No claim on file\n                                             ↓\n                       May I have policy effective and termed date?\n                                             ↓\n                    Check DOS lies between effective and termed date\n                     ↙                                             ↘\n                 Yes                                                 No\n                  ↓                                                   ↓\n         May I have the TFL? ← ←                           Is there any other policy\n                  ↓             ↖                         active for the patient on DOS?\n         Check DOS lies          ↖                          ↙                        ↘\n           within TFL             ↖                       Yes                         No\n           ↙        ↘              ↖                       ↓                          ↓\n         Yes         No             ↖                  May I have                  May I get\n          ↓           ↓              ← ← ← ← ← ← ←   Policy ID, Policy            call ref#?\n    May I have    Can we fax or                      effective and\n    claim mail     mail claim                        termed Date?\n    address, PA    with POTF?\n    ID, Fax#?       ↙       ↘\n        ↓          No       Yes\n    May I get      ↓         ↓\n    call ref#? ───→ ↖   May I have Fax#\n                        or Mail address\n                        to send claim\n                        with POTF?\n                             ↓\n                        May I get\n                        call ref#?",
     "importantNotesAndActions": [
       "Please take action as per your process update. Below actions can be different from your process update.",
       "If the patient policy is active on DOS and DOS lies within TFL and the payer ID & mailing address are the same as the system details then you can resubmit the claim.",
