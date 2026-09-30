@@ -33,11 +33,9 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     if (isInteractiveTable && pageData.body) {
       try {
         const records = pageData.body.split('\n').filter(l => l.trim()).map(line => {
-          // Look for a colon divider first
           let splitIndex = line.indexOf(':')
           let delimiter = ':'
 
-          // If no colon is found, search for a tab key or double-space block divider
           if (splitIndex === -1) {
             const spaceMatch = line.match(/\s{2,}/)
             if (spaceMatch) {
@@ -62,10 +60,8 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
       setPhoneRecords([])
     }
   }, [tabKey, data, isInteractiveTable])
-
     // Serializes table actions back to the raw string format with correct dividers
   const saveRecordsToDatabase = (updatedRecords) => {
-    // Keep clean colon dividers for Insurance, use distinct spaces for TFL rows
     const separator = isInsuranceMatrixView ? ' : ' : '                  '
     const serializedBody = updatedRecords
       .map(r => `${r.payer}${separator}${r.number}`)
@@ -90,7 +86,6 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     setPhoneRecords(updated)
     saveRecordsToDatabase(updated)
 
-    // Clean up input fields
     setInputPayer('')
     setInputNumber('')
     setShowAddForm(false)
@@ -109,16 +104,14 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     setIsEditing(false)
   }
 
-  // Dynamically name layout text depending on active route categories
   const columnLeftName = isInsuranceMatrixView ? 'Insurance Company Payer' : 'Insurance Name'
   const columnRightName = isInsuranceMatrixView ? 'Primary Directory Phone Number' : 'TFL Threshold Limit'
   const actionButtonText = isInsuranceMatrixView ? '➕ Add New Ins Phone Number' : '➕ Add New TFL Rule'
   const formHeaderLabel = isInsuranceMatrixView ? 'Insurance Phone Record' : 'Timely Filing Rule'
 
-    return (
+  return (
     <div className="space-y-6">
       
-      {/* Upper header section tracking separate edit action controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
         <div>
           <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">{pageData.title}</h1>
@@ -150,7 +143,6 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
           </div>
         )}
       </div>
-
       {/* UNIVERSAL ADMINISTRATIVE FORM PANEL */}
       {isInteractiveTable && showAddForm && (
         <form onSubmit={handleAddSubmit} className="p-4 border border-gray-400/20 rounded bg-gray-500/5 max-w-xl space-y-3">
@@ -259,7 +251,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
           <div className="flex flex-col gap-1">
             <label className="text-xs font-bold uppercase tracking-wider">Page Content Workspace:</label>
             <textarea
-              rows={8}
+              rows={12}
               value={editBody}
               onChange={(e) => setEditBody(e.target.value)}
               required
@@ -280,7 +272,15 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
         /* Public Read-Only Layout Presentation Frame for Students */
         <div className="space-y-4 max-w-4xl">
           <h1 className="text-2xl font-bold tracking-tight border-b border-gray-400/10 pb-2">{pageData.title}</h1>
-          <p className="whitespace-pre-wrap leading-relaxed text-sm opacity-90 text-justify">{pageData.body}</p>
+          <div 
+            className={`whitespace-pre-wrap leading-relaxed text-sm opacity-90 text-left p-4 rounded border border-gray-400/10 ${
+              (pageData.body && (pageData.body.includes('↓') || pageData.body.includes('↙'))) 
+                ? 'font-mono text-xs overflow-x-auto bg-gray-500/5' 
+                : 'font-sans text-sm'
+            }`}
+          >
+            {pageData.body}
+          </div>
         </div>
       )}
 
@@ -288,6 +288,3 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
   )
 }
 
-
-
-  
