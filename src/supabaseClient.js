@@ -1,7 +1,11 @@
-// Standalone web build module setup bypassing un-resolved network resource nodes
-import { createClient } from 'https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js?module';
+const { createClient } = window.supabase || {};
 
-const supabaseUrl = "https://oqwvzopylckwwktbnzwi.supabase.co"; 
-const supabaseAnonKey = "sb_publishable_M98XZyB7svx6Le4IyZ629Q_KDQuAAAr"; 
+if (!createClient) {
+  console.error("Failed to load Supabase CDN.");
+}
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseUrl = "https://oqwvzopylckwwktbnzwi.supabase.co";
+const supabaseAnonKey = "sb_publishable_M98XZyB7svx6Le4IyZ629Q_KDQuAAAr";
+
+// Safely initialize the client to prevent application crashes if the CDN fails to load
+export const supabase = createClient ? createClient(supabaseUrl, supabaseAnonKey) : null;
