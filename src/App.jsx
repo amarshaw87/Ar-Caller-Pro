@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react'
+import { supabase } from './supabaseClient'
 
-// Import all 4 central text database structures we initialized earlier
 import baseScenarios from './data/scenarios.json'
 import baseInsurancePh from './data/insurancePh.json'
 import baseTflRules from './data/tflRules.json'
 import baseContentData from './data/contentData.json'
 
-// Import the modular sub-component frameworks we will create next
 import Header from './components/Header'
 import LoginGateway from './components/LoginGateway'
 import WorkspaceView from './components/WorkspaceView'
@@ -14,28 +13,56 @@ import InfoContainer from './components/InfoContainer'
 import Footer from './components/Footer'
 
 export default function App() {
-  // Global React App Application States
   const [darkMode, setDarkMode] = useState(false)
   const [currentUser, setCurrentUser] = useState(() => {
     return JSON.parse(sessionStorage.getItem('ar_active_user')) || null
   })
 
-  const [currentTab, setCurrentTab] = useState('HOME') // Tracks active top navigation tab
-  const [activeScenarioKey, setActiveScenarioKey] = useState('no_claim_on_file')
+  const [currentTab, setCurrentTab] = useState('HOME') 
+  const [activeScenarioKey, setActiveScenarioKey] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
 
-   // Dynamic Live Sync Databases state machines fueled initially by our text files
-  const [scenarios, setScenarios] = useState(baseScenarios)
+  const [scenarios, setScenarios] = useState({})
   const [insurancePh, setInsurancePh] = useState(baseInsurancePh.records || baseInsurancePh) 
   const [tflRules, setTflRules] = useState(baseTflRules.rules || baseTflRules)               
   const [contentData, setContentData] = useState(baseContentData)
+  const loadCloudDatabaseScenarios = async () => {
+    setIsLoading(true)
+    const { data, error } = await supabase.from('scenarios').select('*')
+    
+    if (!error && data && data.length > 0) {
+      const formattedObject = {}
+      data.forEach(item => {
+        formattedObject[item.id] = item
+      })
+      setScenarios(formattedObject)
+      
+      const targetCategory = currentTab === 'DENIALS' ? 'DENIALS' : 'AR SCENARIO'
+      const filteredKeys = Object.keys(formattedObject).filter(k => formattedObject[k].category === targetCategory)
+      if (filteredKeys.length > 0) {
+        setActiveScenarioKey(filteredKeys[0])
+      } else {
+        setActiveScenarioKey('')
+      }
+    } else {
+      setScenarios(baseScenarios)
+      const targetCategory = currentTab === 'DENIALS' ? 'DENIALS' : 'AR SCENARIO'
+      const filteredKeys = Object.keys(baseScenarios).filter(k => baseScenarios[k].category === targetCategory)
+      if (filteredKeys.length > 0) {
+        setActiveScenarioKey(filteredKeys[0])
+      }
+    }
+    setIsLoading(false)
+  }
 
-  // Load any previously saved admin modifications securely from browser memory on startup
-    // Disabling local memory cache to force all devices to download fresh data from GitHub files
   useEffect(() => {
-    // Legacy local storage cache bypassed successfully
-  }, [])
+    if (currentUser && (currentTab === 'AR SCENARIO' || currentTab === 'DENIALS')) {
+      loadCloudDatabaseScenarios()
+    } else {
+      setIsLoading(false)
+    }
+  }, [currentTab, currentUser])
 
-  // Sync theme changes directly onto the master HTML wrapper element class attributes
   useEffect(() => {
     const rootElement = document.documentElement
     if (darkMode) {
@@ -46,41 +73,43 @@ export default function App() {
       rootElement.classList.remove('dark')
     }
   }, [darkMode])
-
-  // Administrative Database Injection Operations (Amar Shaw Exclusive Save Updates)
-  const handleAddNewScenario = (newObj) => {
-    const updated = { ...scenarios, [newObj.id]: newObj }
-    setScenarios(updated)
-    localStorage.setItem('ar_scenarios', JSON.stringify(updated))
+  const handleAddNewScenario = async (newObj) => {
+    setIsLoading(true)
+    const { error } = await supabase.from('scenarios').insert([newObj])
+    if (error) {
+      alert("Cloud Database Insertion Error: " + error.message)
+    } else {
+      alert("🚀 Success! New dialogue entry locked into Supabase forever!")
+      await loadCloudDatabaseScenarios()
+    }
+    setIsLoading(false)
   }
 
-    // Delete an existing scenario dynamically from the active state cache
-  const handleDeleteScenario = (idToDelete) => {
-    if (window.confirm("Are you sure you want to permanently delete this dialogue module?")) {
-      const updated = { ...scenarios }
-      delete updated[idToDelete]
-      setScenarios(updated)
-      localStorage.setItem('ar_scenarios', JSON.stringify(updated))
-      
-      // Automatically switch to another valid remaining key so the UI doesn't crash
-      const remainingKeys = Object.keys(updated)
-      if (remainingKeys.length > 0) {
-        setActiveScenarioKey(remainingKeys[0])
+  const handleEditScenario = async (idToEdit, updatedObj) => {
+    setIsLoading(true)
+    const { error } = await supabase.from('scenarios').update(updatedObj).eq('id', idToEdit)
+    if (error) {
+      alert("Cloud Database Modification Fault: " + error.message)
+    } else {
+      alert("📝 Changes securely pushed to remote PostgreSQL cluster layers!")
+      await loadCloudDatabaseScenarios()
+    }
+    setIsLoading(false)
+  }
+
+  const handleDeleteScenario = async (idToDelete) => {
+    if (window.confirm("Are you sure you want to permanently delete this dialogue module from the active database pool?")) {
+      setIsLoading(true)
+      const { error } = await supabase.from('scenarios').delete().eq('id', idToDelete)
+      if (error) {
+        alert("Database Erasure Fault: " + error.message)
       } else {
-        setActiveScenarioKey('')
+        alert("❌ Dialogue trace purged cleanly from Supabase cloud tables.")
+        await loadCloudDatabaseScenarios()
       }
+      setIsLoading(false)
     }
   }
-
-  // Edit and overwrite parameters inside an existing configuration scenario
-  const handleEditScenario = (idToEdit, updatedObj) => {
-    const updated = { ...scenarios, [idToEdit]: updatedObj }
-    setScenarios(updated)
-    localStorage.setItem('ar_scenarios', JSON.stringify(updated))
-  }
-
-
-  
 
   const handleAddNewPhone = (newStr) => {
     const updated = [...insurancePh, newStr].sort((a, b) => a.localeCompare(b))
@@ -99,8 +128,6 @@ export default function App() {
     setContentData(updated)
     localStorage.setItem('ar_content_data', JSON.stringify(updated))
   }
-
-  // Redirect unauthenticated traffic back onto our single security gate screen
   if (!currentUser) {
     return (
       <div className={`min-h-screen flex flex-col justify-center items-center transition-colors duration-300 ${darkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
@@ -108,26 +135,30 @@ export default function App() {
       </div>
     )
   }
+
+  if (isLoading) {
     return (
+      <div className="h-screen flex items-center justify-center font-mono text-xs bg-zinc-950 text-emerald-400 tracking-widest uppercase">
+        ⚡ Initializing full stack database sync pipelines to Supabase engine...
+      </div>
+    )
+  }
+
+  return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
       
-      {/* GLOBAL HEADER HEADER CONTAINER BAND */}
       <Header 
         darkMode={darkMode} 
         setDarkMode={setDarkMode} 
         currentTab={currentTab} 
         setCurrentTab={(tabName) => {
           setCurrentTab(tabName);
-          // Automatically clear stale keys to prevent tab category cross-over crashes
-          setActiveScenarioKey('');
+          setActiveScenarioKey(''); 
         }} 
         currentUser={currentUser}
         onLogout={() => (setCurrentUser(null), setCurrentTab('HOME'), sessionStorage.removeItem('ar_active_user'))}
-
       />
 
-
-      {/* CORE WORKSPACE APPLICATION CANVAS CONTAINER */}
       <main className="max-w-6xl w-full mx-auto p-4 md:p-6 flex-grow">
         
         {currentTab === 'HOME' && (
@@ -167,8 +198,7 @@ export default function App() {
             darkMode={darkMode}
           />
         )}
-
-                {currentTab === 'INS PH#' && (
+        {currentTab === 'INS PH#' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
               <div>
@@ -192,7 +222,6 @@ export default function App() {
               )}
             </div>
             
-            {/* Download dataset control visible strictly to Admin */}
             {currentUser.role === 'admin' && (
               <button 
                 onClick={() => {
@@ -215,7 +244,8 @@ export default function App() {
             </div>
           </div>
         )}
-                {currentTab === 'TFL' && (
+
+        {currentTab === 'TFL' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
               <div>
@@ -276,13 +306,8 @@ export default function App() {
 
       </main>
 
-      {/* UNIVERSAL APPLICATION FOOTER COMPONENT */}
       <Footer />
 
     </div>
   )
 }
-
-
-
-
