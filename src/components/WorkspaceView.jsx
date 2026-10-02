@@ -27,13 +27,11 @@ export default function WorkspaceView({
   const hasValidActive = scenarios && scenarios[activeScenarioKey] && scenarios[activeScenarioKey].category === currentTab
   const fallbackKey = filteredKeys && filteredKeys.length > 0 ? filteredKeys[0] : null
   const activeContent = hasValidActive ? scenarios[activeScenarioKey] : (fallbackKey ? scenarios[fallbackKey] : null)
-
   const handleCreateScenarioSubmit = (e) => {
     e.preventDefault()
     if (!newTitle.trim()) return
 
     const targetId = isEditing ? editingId : newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_')
-    
     const parsedAnalysis = newAnalysis.split('\n').filter(line => line.trim() !== '')
     const parsedNotes = newNotes.split('\n').filter(line => line.trim() !== '')
 
@@ -68,7 +66,6 @@ export default function WorkspaceView({
 
   return (
     <div className="space-y-6">
-      {/* 1. MASTER DISCOVERY BANNER SECTION */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
         <div>
           <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">{pageTitleHeader}</h1>
@@ -77,12 +74,7 @@ export default function WorkspaceView({
         {currentUser?.role === 'admin' && (
           <button 
             onClick={() => {
-              setIsEditing(false)
-              setEditingId(null)
-              setNewTitle('')
-              setNewAnalysis('')
-              setNewNotes('')
-              setShowAddModal(true)
+              setIsEditing(false); setEditingId(null); setNewTitle(''); setNewAnalysis(''); setNewNotes(''); setShowAddModal(true);
             }}
             className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider whitespace-nowrap"
           >
@@ -91,7 +83,6 @@ export default function WorkspaceView({
         )}
       </div>
 
-      {/* 2. DYNAMIC LOOKUP DATA EXPORT FOR SECURITY BACKUPS */}
       {currentUser?.role === 'admin' && (
         <button 
           onClick={() => {
@@ -106,8 +97,6 @@ export default function WorkspaceView({
           💾 Download Updated scenarios.json File
         </button>
       )}
-
-      {/* 3. DYNAMIC INDEX DIRECTORY INTERNET SUB-LINKS GRID */}
       <div className="p-4 border border-gray-400/20 rounded bg-gray-500/5">
         <h3 className="text-xs font-bold uppercase tracking-wider mb-3 opacity-60">Completed Interactive Dialogue Modules</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -132,16 +121,8 @@ export default function WorkspaceView({
                       setIsEditing(true)
                       setEditingId(key)
                       setNewTitle(scenarios[key]?.title || '')
-                      setNewAnalysis(
-                        Array.isArray(scenarios[key]?.onCallAnalysis)
-                          ? scenarios[key].onCallAnalysis.join('\n')
-                          : (scenarios[key]?.onCallAnalysis || '')
-                      )
-                      setNewNotes(
-                        Array.isArray(scenarios[key]?.importantNotesAndActions)
-                          ? scenarios[key].importantNotesAndActions.join('\n')
-                          : (scenarios[key]?.importantNotesAndActions || '')
-                      )
+                      setNewAnalysis(Array.isArray(scenarios[key]?.onCallAnalysis) ? scenarios[key].onCallAnalysis.join('\n') : (scenarios[key]?.onCallAnalysis || ''))
+                      setNewNotes(Array.isArray(scenarios[key]?.importantNotesAndActions) ? scenarios[key].importantNotesAndActions.join('\n') : (scenarios[key]?.importantNotesAndActions || ''))
                       setShowAddModal(true)
                     }}
                     className="p-1 text-[10px] bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
@@ -161,7 +142,6 @@ export default function WorkspaceView({
           ))}
         </div>
       </div>
-      {/* 4. ADMIN MODAL DIALOGUE CREATOR PORTAL POP-UP */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <form onSubmit={handleCreateScenarioSubmit} className={`w-full max-w-2xl p-6 border rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto space-y-4 ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white' : 'bg-white border-gray-200 text-black'}`}>
@@ -191,12 +171,7 @@ export default function WorkspaceView({
               <button 
                 type="button" 
                 onClick={() => {
-                  setShowAddModal(false);
-                  setIsEditing(false);
-                  setEditingId(null);
-                  setNewTitle('');
-                  setNewAnalysis('');
-                  setNewNotes('');
+                  setShowAddModal(false); setIsEditing(false); setEditingId(null); setNewTitle(''); setNewAnalysis(''); setNewNotes('');
                 }} 
                 className="px-6 py-2 bg-zinc-500 text-white font-bold rounded text-xs uppercase tracking-wider"
               >
@@ -206,17 +181,27 @@ export default function WorkspaceView({
           </form>
         </div>
       )}
-      {/* 5. DYNAMICALLY LOADED SIMULATOR CONTROLS VIEW */}
       {activeContent ? (
         <div className="space-y-8 mt-4 border-t border-gray-400/10 pt-6">
           
           <div className="w-full flex flex-col items-center">
             <h2 className="text-lg font-bold underline mb-4 text-center">On call analysis and Scenario:</h2>
-            <div className="w-full overflow-x-auto p-4 bg-gray-500/5 rounded border border-gray-400/10 flex justify-center">
-              <div className="whitespace-pre font-sans text-sm font-semibold leading-relaxed text-left tracking-wide inline-block min-w-max">
-                {Array.isArray(activeContent.onCallAnalysis)
-                  ? activeContent.onCallAnalysis.join('\n')
-                  : (activeContent.onCallAnalysis || '')}
+            <div className="w-full p-4 bg-gray-500/5 rounded border border-gray-400/10 max-w-4xl mx-auto">
+              <div className="whitespace-pre-wrap font-sans text-sm font-semibold leading-relaxed text-left tracking-wide space-y-1">
+                {Array.isArray(activeContent.onCallAnalysis) ? (
+                  activeContent.onCallAnalysis.map((step, idx) => (
+                    <div 
+                      key={idx} 
+                      className={step.trim() === '↓' || step.trim() === '↙' || step.trim() === '↘' 
+                        ? "text-center text-emerald-500 font-bold my-1 text-base animate-pulse" 
+                        : "py-0.5"}
+                    >
+                      {step}
+                    </div>
+                  ))
+                ) : (
+                  activeContent.onCallAnalysis || ''
+                )}
               </div>
             </div>
           </div>
@@ -224,7 +209,7 @@ export default function WorkspaceView({
           <div className="p-4 border border-dashed border-gray-400/40 rounded bg-gray-500/5 flex flex-col justify-center items-center text-center">
             <span className="text-[10px] uppercase font-mono tracking-widest opacity-40 mb-1">[ Flowchart Visualization Canvas File Anchor ]</span>
             <img 
-              src={`/images/${activeContent.flowchartImage}`} 
+              src={`images/${activeContent.flowchartImage}`} 
               alt={activeContent.title} 
               className="max-w-full h-auto rounded border border-gray-400/10"
               onError={(e) => { e.target.style.display = 'none' }} 
