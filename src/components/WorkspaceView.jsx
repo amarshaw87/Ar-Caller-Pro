@@ -169,7 +169,7 @@ export default function WorkspaceView({
             </div>
           </form>
         </div>
-      )}
+      })
   const renderFlowTree = (rawData) => {
     const lines = cleanDataToArray(rawData)
     if (lines.length === 0) return null
