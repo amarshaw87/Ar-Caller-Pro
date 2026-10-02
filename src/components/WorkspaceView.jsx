@@ -85,6 +85,7 @@ export default function WorkspaceView({
   return (
     <div className="space-y-6">
       
+      {/* 1. MASTER DISCOVERY BANNER SECTION */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
         <div>
           <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">{pageTitleHeader}</h1>
@@ -101,7 +102,23 @@ export default function WorkspaceView({
           </button>
         )}
       </div>
+      {/* 2. DYNAMIC LOOKUP DATA EXPORT FOR SECURITY BACKUPS */}
+      {currentUser?.role === 'admin' && (
+        <button 
+          onClick={() => {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(scenarios, null, 2))
+            const downloadAnchor = document.createElement('a')
+            downloadAnchor.setAttribute("href", dataStr)
+            downloadAnchor.setAttribute("download", "scenarios.json")
+            downloadAnchor.click()
+          }}
+          className="text-xs font-semibold px-3 py-1 bg-zinc-500/20 rounded border border-zinc-400 hover:bg-zinc-500/40 transition-all text-current"
+        >
+          💾 Download Updated scenarios.json File
+        </button>
+      )}
 
+      {/* 3. DYNAMIC INDEX DIRECTORY INTERNET SUB-LINKS GRID */}
       <div className="p-4 border border-gray-400/20 rounded bg-gray-500/5">
         <h3 className="text-xs font-bold uppercase tracking-wider mb-3 opacity-60">Completed Interactive Dialogue Modules</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -141,6 +158,7 @@ export default function WorkspaceView({
           ))}
         </div>
       </div>
+      {/* 4. ADMIN MODAL DIALOGUE CREATOR PORTAL POP-UP */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <form onSubmit={handleCreateScenarioSubmit} className={`w-full max-w-2xl p-6 border rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto space-y-4 ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white' : 'bg-white border-gray-200 text-black'}`}>
@@ -170,149 +188,7 @@ export default function WorkspaceView({
           </form>
         </div>
       )}
-  const renderFlowTree = (rawData) => {
-    const lines = cleanDataToArray(rawData)
-    if (lines.length === 0) return null
-
-    const initialFlow = []
-    let hasSplit = false
-    const leftBranch = []
-    const rightBranch = []
-    let currentBranch = null
-
-    lines.forEach((line) => {
-      const trimmed = line.trim()
-      
-      if (trimmed.includes('↙') || trimmed.includes('↘') || trimmed === '↙ ↘' || trimmed === '↙   ↘') {
-        hasSplit = true
-        return
-      }
-
-      if (hasSplit) {
-        const upper = trimmed.toUpperCase()
-        if (upper.includes('HAS MET') && !upper.includes('NOT MET') && !upper.includes('EXCLUDING')) {
-          currentBranch = 'left'
-        } else if (upper.includes('ALREADY MET') || upper.includes('EXCLUDING')) {
-          currentBranch = 'right'
-        } else if (upper.includes('NOT MET')) {
-          currentBranch = 'left'
-        }
-
-        if (currentBranch === 'left') {
-          leftBranch.push(trimmed)
-        } else if (currentBranch === 'right') {
-          rightBranch.push(trimmed)
-        } else {
-          if (leftBranch.length <= rightBranch.length) {
-            leftBranch.push(trimmed)
-          } else {
-            rightBranch.push(trimmed)
-          }
-        }
-      } else {
-        initialFlow.push(trimmed)
-      }
-    })
-
-    const renderLineItem = (text, idx) => {
-      const isArrow = text === '↓' || text === '│'
-      if (isArrow) {
-        return <div key={idx} className="text-center text-emerald-500 font-black text-lg my-1 animate-pulse">↓</div>
-      }
-      return (
-        <div key={idx} className={`p-3 rounded-lg border text-center font-semibold text-sm max-w-xl mx-auto shadow-sm tracking-wide leading-relaxed ${
-          darkMode ? 'bg-zinc-900 border-zinc-800 text-zinc-100' : 'bg-white border-gray-200 text-gray-800'
-        }`}>
-          {text}
-        </div>
-      )
-    }
-
-    return (
-      <div className="w-full space-y-4 max-w-5xl mx-auto">
-        <div className="flex flex-col items-center space-y-2">
-          {initialFlow.map((line, idx) => renderLineItem(line, idx))}
-        </div>
-
-        {hasSplit && (
-          <div className="space-y-2">
-            <div className="text-center text-emerald-500 font-black text-xl tracking-widest">↙ &nbsp; &nbsp; ↘</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start pt-2">
-              <div className="space-y-2 p-4 rounded-xl border border-gray-400/10 bg-gray-500/5">
-                {leftBranch.map((line, idx) => renderLineItem(line, `l-${idx}`))}
-              </div>
-              <div className="space-y-2 p-4 rounded-xl border border-gray-400/10 bg-gray-500/5">
-                {rightBranch.map((line, idx) => renderLineItem(line, `r-${idx}`))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-  return (
-    <div className="space-y-6">
-      
-      {/* HEADER UTILITY CONTROLS */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
-        <div>
-          <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">{pageTitleHeader}</h1>
-          <p className="text-xs font-semibold text-emerald-500 mt-1">🔴 We have added a tool to prepare notes in the below scenarios. Please do share your feedback...</p>
-        </div>
-        {currentUser?.role === 'admin' && (
-          <button 
-            onClick={() => {
-              setIsEditing(false); setEditingId(null); setNewTitle(''); setNewAnalysis(''); setNewNotes(''); setShowAddModal(true);
-            }}
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider whitespace-nowrap"
-          >
-            ➕ Add New Scenario
-          </button>
-        )}
-      </div>
-
-      {/* SEARCH LISTINGS GRID */}
-      <div className="p-4 border border-gray-400/20 rounded bg-gray-500/5">
-        <h3 className="text-xs font-bold uppercase tracking-wider mb-3 opacity-60">Completed Interactive Dialogue Modules</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          {filteredKeys.map((key) => (
-            <div
-              key={key}
-              className={`flex items-center justify-between text-left text-xs font-bold rounded border transition-all overflow-hidden ${activeScenarioKey === key ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-gray-500/10 border-gray-400/30 hover:bg-gray-500/20'}`}
-            >
-              <button
-                type="button"
-                onClick={() => { setActiveScenarioKey(key); setCompiledScratchNote(''); }}
-                className="p-3 text-left flex-grow truncate outline-none"
-              >
-                • {scenarios[key]?.title}
-              </button>
-
-              {currentUser?.role === 'admin' && (
-                <div className="flex items-center pr-2 gap-1.5 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsEditing(true)
-                      setEditingId(key)
-                      setNewTitle(scenarios[key]?.title || '')
-                      setNewAnalysis(Array.isArray(scenarios[key]?.onCallAnalysis) ? scenarios[key].onCallAnalysis.join('\n') : (scenarios[key]?.onCallAnalysis || ''))
-                      setNewNotes(Array.isArray(scenarios[key]?.importantNotesAndActions) ? scenarios[key].importantNotesAndActions.join('\n') : (scenarios[key]?.importantNotesAndActions || ''))
-                      setShowAddModal(true)
-                    }}
-                    className="p-1 text-[10px] bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                  >
-                    ✏️
-                  </button>
-                  <button type="button" onClick={() => onDeleteScenario(key)} className="p-1 text-[10px] bg-red-600 text-white rounded hover:bg-red-700 transition-colors">❌</button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* CORE SIMULATOR RUNTIME DASHBOARD LAYOUT CONTROLS VIEW */}
+      {/* 5. CORE SIMULATOR RUNTIME DASHBOARD LAYOUT CONTROLS VIEW */}
       {activeContent ? (
         <div className="space-y-8 mt-4 border-t border-gray-400/10 pt-6">
           
@@ -320,7 +196,85 @@ export default function WorkspaceView({
           <div className="w-full space-y-4">
             <h2 className="text-lg font-black uppercase tracking-wider text-center border-b border-gray-400/10 pb-2">On Call interactive Diagram Matrix</h2>
             <div className="p-6 rounded-xl border border-gray-400/10 bg-gray-500/5 shadow-inner">
-              {renderFlowTree(activeContent.onCallAnalysis)}
+              
+              {/* FLOW TREE COMPILER WORKSPACE */}
+              {(() => {
+                const lines = cleanDataToArray(activeContent.onCallAnalysis)
+                if (lines.length === 0) return null
+
+                const initialFlow = []
+                let hasSplit = false
+                const leftBranch = []
+                const rightBranch = []
+                let currentBranch = null
+
+                lines.forEach((line) => {
+                  const trimmed = line.trim()
+                  if (trimmed.includes('↙') || trimmed.includes('↘') || trimmed === '↙ ↘' || trimmed === '↙   ↘') {
+                    hasSplit = true
+                    return
+                  }
+
+                  if (hasSplit) {
+                    const upper = trimmed.toUpperCase()
+                    if (upper.includes('HAS MET') && !upper.includes('NOT MET') && !upper.includes('EXCLUDING')) {
+                      currentBranch = 'left'
+                    } else if (upper.includes('ALREADY MET') || upper.includes('EXCLUDING')) {
+                      currentBranch = 'right'
+                    } else if (upper.includes('NOT MET')) {
+                      currentBranch = 'left'
+                    }
+
+                    if (currentBranch === 'left') {
+                      leftBranch.push(trimmed)
+                    } else if (currentBranch === 'right') {
+                      rightBranch.push(trimmed)
+                    } else {
+                      if (leftBranch.length <= rightBranch.length) {
+                        leftBranch.push(trimmed)
+                      } else {
+                        rightBranch.push(trimmed)
+                      }
+                    }
+                  } else {
+                    initialFlow.push(trimmed)
+                  }
+                })
+
+                const renderLineItem = (text, idx) => {
+                  const isArrow = text === '↓' || text === '│'
+                  if (isArrow) {
+                    return <div key={idx} className="text-center text-emerald-500 font-black text-lg my-1 animate-pulse">↓</div>
+                  }
+                  return (
+                    <div key={idx} className={`p-3 rounded-lg border text-center font-semibold text-sm max-w-xl mx-auto shadow-sm tracking-wide leading-relaxed ${darkMode ? 'bg-zinc-900 border-zinc-800 text-zinc-100' : 'bg-white border-gray-200 text-gray-800'}`}>
+                      {text}
+                    </div>
+                  )
+                }
+
+                return (
+                  <div className="w-full space-y-4 max-w-5xl mx-auto">
+                    <div className="flex flex-col items-center space-y-2">
+                      {initialFlow.map((line, idx) => renderLineItem(line, idx))}
+                    </div>
+                    {hasSplit && (
+                      <div className="space-y-2">
+                        <div className="text-center text-emerald-500 font-black text-xl tracking-widest">↙ &nbsp; &nbsp; ↘</div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start pt-2">
+                          <div className="space-y-2 p-4 rounded-xl border border-gray-400/10 bg-gray-500/5">
+                            {leftBranch.map((line, idx) => renderLineItem(line, `l-${idx}`))}
+                          </div>
+                          <div className="space-y-2 p-4 rounded-xl border border-gray-400/10 bg-gray-500/5">
+                            {rightBranch.map((line, idx) => renderLineItem(line, `r-${idx}`))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+
             </div>
           </div>
 
