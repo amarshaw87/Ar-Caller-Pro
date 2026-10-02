@@ -28,27 +28,36 @@ export default function WorkspaceView({
   const fallbackKey = filteredKeys && filteredKeys.length > 0 ? filteredKeys[0] : null
   const activeContent = hasValidActive ? scenarios[activeScenarioKey] : (fallbackKey ? scenarios[fallbackKey] : null)
   const handleCreateScenarioSubmit = (e) => {
-    e.preventDefault()
-    if (!newTitle.trim()) return
+  e.preventDefault()
+  if (!newTitle.trim()) return
 
-    const targetId = isEditing ? editingId : newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_')
-    const parsedAnalysis = newAnalysis.split('\n').filter(line => line.trim() !== '')
-    const parsedNotes = newNotes.split('\n').filter(line => line.trim() !== '')
+  const targetId = isEditing ? editingId : newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_')
+  
+  // Clean up incoming text and convert it to a safe list of elements
+  const parsedAnalysis = newAnalysis
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line !== '')
 
-    const payload = {
-      id: targetId,
-      title: newTitle,
-      category: currentTab,
-      onCallAnalysis: parsedAnalysis,
-      flowchartImage: isEditing ? (scenarios[editingId]?.flowchartImage || 'placeholder-tree.png') : 'placeholder-tree.png',
-      importantNotesAndActions: parsedNotes
-    }
+  const parsedNotes = newNotes
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line !== '')
 
-    if (isEditing) {
-      onEditScenario(editingId, payload)
-    } else {
-      onAddScenario(payload)
-    }
+  const payload = {
+    id: targetId,
+    title: newTitle,
+    category: currentTab,
+    onCallAnalysis: parsedAnalysis,
+    flowchartImage: isEditing ? (scenarios[editingId]?.flowchartImage || 'placeholder-tree.png') : 'placeholder-tree.png',
+    importantNotesAndActions: parsedNotes
+  }
+
+  if (isEditing) {
+    onEditScenario(editingId, payload)
+  } else {
+    onAddScenario(payload)
+  }
 
     setNewTitle('')
     setNewAnalysis('')
