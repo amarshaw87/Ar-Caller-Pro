@@ -22,10 +22,8 @@ export default function WorkspaceView({
   const [newNotes, setNewNotes] = useState('')
   const [compiledScratchNote, setCompiledScratchNote] = useState('')
 
-  // Dynamically filter database keys based on active main nav tab category
-  const filteredKeys = Object.keys(scenarios).filter(key => scenarios[key].category === currentTab)
+  const filteredKeys = Object.keys(scenarios || {}).filter(key => scenarios[key]?.category === currentTab)
   
-  // Safe default fallback check if selection gets deleted
   const hasValidActive = scenarios && scenarios[activeScenarioKey] && scenarios[activeScenarioKey].category === currentTab
   const fallbackKey = filteredKeys && filteredKeys.length > 0 ? filteredKeys[0] : null
   const activeContent = hasValidActive ? scenarios[activeScenarioKey] : (fallbackKey ? scenarios[fallbackKey] : null)
@@ -36,7 +34,6 @@ export default function WorkspaceView({
 
     const targetId = isEditing ? editingId : newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_')
     
-    // Parse plaintext newlines smoothly into independent clean text list strings
     const parsedAnalysis = newAnalysis.split('\n').filter(line => line.trim() !== '')
     const parsedNotes = newNotes.split('\n').filter(line => line.trim() !== '')
 
@@ -55,7 +52,6 @@ export default function WorkspaceView({
       onAddScenario(payload)
     }
 
-    // Reset parameters cleanly
     setNewTitle('')
     setNewAnalysis('')
     setNewNotes('')
@@ -66,21 +62,19 @@ export default function WorkspaceView({
     setCompiledScratchNote('')
   }
 
-  // Define precise text title headers based on selected tab channels
   const pageTitleHeader = currentTab === 'AR SCENARIO' 
     ? 'AR Scenario - Click on Specific Scenario' 
     : 'Denial Codes - Click on Denial Code'
 
-    return (
+  return (
     <div className="space-y-6">
-      
       {/* 1. MASTER DISCOVERY BANNER SECTION */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
         <div>
           <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">{pageTitleHeader}</h1>
           <p className="text-xs font-semibold text-emerald-500 mt-1">🔴 We have added a tool to prepare notes in the below scenarios. Please do share your feedback...</p>
         </div>
-        {currentUser.role === 'admin' && (
+        {currentUser?.role === 'admin' && (
           <button 
             onClick={() => {
               setIsEditing(false)
@@ -98,7 +92,7 @@ export default function WorkspaceView({
       </div>
 
       {/* 2. DYNAMIC LOOKUP DATA EXPORT FOR SECURITY BACKUPS */}
-      {currentUser.role === 'admin' && (
+      {currentUser?.role === 'admin' && (
         <button 
           onClick={() => {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(scenarios, null, 2))
@@ -113,7 +107,7 @@ export default function WorkspaceView({
         </button>
       )}
 
-            {/* 3. DYNAMIC INDEX DIRECTORY INTERNET SUB-LINKS GRID */}
+      {/* 3. DYNAMIC INDEX DIRECTORY INTERNET SUB-LINKS GRID */}
       <div className="p-4 border border-gray-400/20 rounded bg-gray-500/5">
         <h3 className="text-xs font-bold uppercase tracking-wider mb-3 opacity-60">Completed Interactive Dialogue Modules</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -122,40 +116,42 @@ export default function WorkspaceView({
               key={key}
               className={`flex items-center justify-between text-left text-xs font-bold rounded border transition-all overflow-hidden ${activeScenarioKey === key ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-gray-500/10 border-gray-400/30 hover:bg-gray-500/20'}`}
             >
-              {/* Primary Scenario Select Click Target */}
               <button
                 type="button"
                 onClick={() => { setActiveScenarioKey(key); setCompiledScratchNote(''); }}
                 className="p-3 text-left flex-grow truncate outline-none"
               >
-                • {scenarios[key].title}
+                • {scenarios[key]?.title}
               </button>
 
-              {/* Administrative Mutation Operations Area */}
-              {currentUser.role === 'admin' && (
+              {currentUser?.role === 'admin' && (
                 <div className="flex items-center pr-2 gap-1.5 shrink-0">
-                  {/* EDIT UTILITY */}
                   <button
                     type="button"
                     onClick={() => {
                       setIsEditing(true)
                       setEditingId(key)
-                      setNewTitle(scenarios[key].title)
-                      setNewAnalysis(scenarios[key].onCallAnalysis.join('\n'))
-                      setNewNotes(scenarios[key].importantNotesAndActions.join('\n'))
+                      setNewTitle(scenarios[key]?.title || '')
+                      setNewAnalysis(
+                        Array.isArray(scenarios[key]?.onCallAnalysis)
+                          ? scenarios[key].onCallAnalysis.join('\n')
+                          : (scenarios[key]?.onCallAnalysis || '')
+                      )
+                      setNewNotes(
+                        Array.isArray(scenarios[key]?.importantNotesAndActions)
+                          ? scenarios[key].importantNotesAndActions.join('\n')
+                          : (scenarios[key]?.importantNotesAndActions || '')
+                      )
                       setShowAddModal(true)
                     }}
                     className="p-1 text-[10px] bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                    title="Edit Scenario"
                   >
                     ✏️
                   </button>
-                  {/* DELETE UTILITY */}
                   <button
                     type="button"
                     onClick={() => onDeleteScenario(key)}
                     className="p-1 text-[10px] bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                    title="Delete Scenario"
                   >
                     ❌
                   </button>
@@ -165,8 +161,7 @@ export default function WorkspaceView({
           ))}
         </div>
       </div>
-
-            {/* 4. ADMIN MODAL DIALOGUE CREATOR PORTAL POP-UP */}
+      {/* 4. ADMIN MODAL DIALOGUE CREATOR PORTAL POP-UP */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <form onSubmit={handleCreateScenarioSubmit} className={`w-full max-w-2xl p-6 border rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto space-y-4 ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white' : 'bg-white border-gray-200 text-black'}`}>
@@ -176,32 +171,32 @@ export default function WorkspaceView({
             
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold uppercase">Scenario Title / Code Name:*</label>
-              <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required placeholder="e.g., CO-29 Timely Filing Limit Expired" className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700' : 'bg-white border-gray-300'}`} />
+              <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required placeholder="e.g., CO-29 Timely Filing Limit Expired" className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-300'}`} />
             </div>
 
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold uppercase">On Call Analysis Guide (Type each step on a new line):*</label>
-              <textarea rows={4} value={newAnalysis} onChange={(e) => setNewAnalysis(e.target.value)} required placeholder="When getting the status...&#10;Verify CPT/DOS ranges..." className={`p-2 border rounded text-xs outline-none font-sans ${darkMode ? 'bg-zinc-900 border-zinc-700' : 'bg-white border-gray-300'}`} />
+              <textarea rows={4} value={newAnalysis} onChange={(e) => setNewAnalysis(e.target.value)} required placeholder="When getting the status..." className={`p-2 border rounded text-xs outline-none font-sans ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-300'}`} />
             </div>
 
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold uppercase">Important Notes & Actions (Type each rule on a new line):*</label>
-              <textarea rows={4} value={newNotes} onChange={(e) => setNewNotes(e.target.value)} required placeholder="If active on DOS then resubmit...&#10;If no POTF then write off..." className={`p-2 border rounded text-xs outline-none font-sans ${darkMode ? 'bg-zinc-900 border-zinc-700' : 'bg-white border-gray-300'}`} />
+              <textarea rows={4} value={newNotes} onChange={(e) => setNewNotes(e.target.value)} required placeholder="If active on DOS then resubmit..." className={`p-2 border rounded text-xs outline-none font-sans ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-300'}`} />
             </div>
 
             <div className="flex gap-4 pt-2 justify-end">
               <button type="submit" className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded text-xs uppercase tracking-wider">
-                {isEditing ? '💾 Update Scenario' : '🟢 Save & Publish Live'}
+                {isEditing ? 'Update Scenario' : 'Save & Publish Live'}
               </button>
               <button 
                 type="button" 
                 onClick={() => {
-                  setShowAddModal(false)
-                  setIsEditing(false)
-                  setEditingId(null)
-                  setNewTitle('')
-                  setNewAnalysis('')
-                  setNewNotes('')
+                  setShowAddModal(false);
+                  setIsEditing(false);
+                  setEditingId(null);
+                  setNewTitle('');
+                  setNewAnalysis('');
+                  setNewNotes('');
                 }} 
                 className="px-6 py-2 bg-zinc-500 text-white font-bold rounded text-xs uppercase tracking-wider"
               >
@@ -211,22 +206,21 @@ export default function WorkspaceView({
           </form>
         </div>
       )}
-
-            {/* 5. DYNAMICALLY LOADED SIMULATOR CONTROLS VIEW (Only if a scenario item is active) */}
+      {/* 5. DYNAMICALLY LOADED SIMULATOR CONTROLS VIEW */}
       {activeContent ? (
         <div className="space-y-8 mt-4 border-t border-gray-400/10 pt-6">
           
-          {/* A. READ-ONLY ANALYSIS GUIDE SCREEN PANEL */}
           <div className="w-full flex flex-col items-center">
             <h2 className="text-lg font-bold underline mb-4 text-center">On call analysis and Scenario:</h2>
             <div className="w-full overflow-x-auto p-4 bg-gray-500/5 rounded border border-gray-400/10 flex justify-center">
               <div className="whitespace-pre font-sans text-sm font-semibold leading-relaxed text-left tracking-wide inline-block min-w-max">
-                {activeContent.onCallAnalysis.join('\n')}
+                {Array.isArray(activeContent.onCallAnalysis)
+                  ? activeContent.onCallAnalysis.join('\n')
+                  : (activeContent.onCallAnalysis || '')}
               </div>
             </div>
           </div>
 
-          {/* B. GRAPHIC VISUALIZATION SCREEN CONTAINER */}
           <div className="p-4 border border-dashed border-gray-400/40 rounded bg-gray-500/5 flex flex-col justify-center items-center text-center">
             <span className="text-[10px] uppercase font-mono tracking-widest opacity-40 mb-1">[ Flowchart Visualization Canvas File Anchor ]</span>
             <img 
@@ -237,24 +231,29 @@ export default function WorkspaceView({
             />
           </div>
 
-          {/* C. READ-ONLY NOTES AND ACTIONS PANEL */}
           <div>
             <h2 className="text-lg font-bold underline mb-3">Important Notes & Actions:</h2>
             <ul className="list-disc pl-6 space-y-2 text-sm leading-relaxed">
-              {activeContent.importantNotesAndActions.map((note, idx) => (
-                <li key={idx}>{note}</li>
-              ))}
+              {Array.isArray(activeContent.importantNotesAndActions) ? (
+                activeContent.importantNotesAndActions.map((note, idx) => (
+                  <li key={idx}>{note}</li>
+                ))
+              ) : (
+                activeContent.importantNotesAndActions ? (
+                  <li>{activeContent.importantNotesAndActions}</li>
+                ) : (
+                  <li className="italic opacity-50">No notes recorded.</li>
+                )
+              )}
             </ul>
           </div>
 
-          {/* D. INTERACTIVE PREPARE NOTES MULTI-COLUMN DATA MATRIX FORM */}
           <FormMatrix 
             darkMode={darkMode} 
             onFormSubmit={(compiledString) => setCompiledScratchNote(compiledString)} 
             onFormReset={() => setCompiledScratchNote('')}
           />
 
-          {/* E. SAFETY INTEGRATED SCRATCHPAD LOG COMPONENT */}
           <Scratchpad 
             darkMode={darkMode} 
             compiledScratchNote={compiledScratchNote} 
@@ -269,7 +268,3 @@ export default function WorkspaceView({
     </div>
   )
 }
-
-
-
-
