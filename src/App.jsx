@@ -75,7 +75,18 @@ export default function App() {
   }, [darkMode])
   const handleAddNewScenario = async (newObj) => {
     setIsLoading(true)
-    const { error } = await supabase.from('scenarios').insert([newObj])
+    
+    const preparedObj = {
+      ...newObj,
+      onCallAnalysis: Array.isArray(newObj.onCallAnalysis) 
+        ? newObj.onCallAnalysis.join('\n') 
+        : (newObj.onCallAnalysis || ''),
+      importantNotesAndActions: Array.isArray(newObj.importantNotesAndActions)
+        ? newObj.importantNotesAndActions.join('\n')
+        : (newObj.importantNotesAndActions || '')
+    }
+
+    const { error } = await supabase.from('scenarios').insert([preparedObj])
     if (error) {
       alert("Cloud Database Insertion Error: " + error.message)
     } else {
@@ -87,7 +98,18 @@ export default function App() {
 
   const handleEditScenario = async (idToEdit, updatedObj) => {
     setIsLoading(true)
-    const { error } = await supabase.from('scenarios').update(updatedObj).eq('id', idToEdit)
+    
+    const preparedObj = {
+      ...updatedObj,
+      onCallAnalysis: Array.isArray(updatedObj.onCallAnalysis) 
+        ? updatedObj.onCallAnalysis.join('\n') 
+        : (updatedObj.onCallAnalysis || ''),
+      importantNotesAndActions: Array.isArray(updatedObj.importantNotesAndActions)
+        ? updatedObj.importantNotesAndActions.join('\n')
+        : (updatedObj.importantNotesAndActions || '')
+    }
+
+    const { error } = await supabase.from('scenarios').update(preparedObj).eq('id', idToEdit)
     if (error) {
       alert("Cloud Database Modification Fault: " + error.message)
     } else {
@@ -96,7 +118,6 @@ export default function App() {
     }
     setIsLoading(false)
   }
-
   const handleDeleteScenario = async (idToDelete) => {
     if (window.confirm("Are you sure you want to permanently delete this dialogue module from the active database pool?")) {
       setIsLoading(true)
@@ -128,6 +149,7 @@ export default function App() {
     setContentData(updated)
     localStorage.setItem('ar_content_data', JSON.stringify(updated))
   }
+
   if (!currentUser) {
     return (
       <div className={`min-h-screen flex flex-col justify-center items-center transition-colors duration-300 ${darkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
@@ -143,7 +165,6 @@ export default function App() {
       </div>
     )
   }
-
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
       
@@ -198,6 +219,7 @@ export default function App() {
             darkMode={darkMode}
           />
         )}
+
         {currentTab === 'INS PH#' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
