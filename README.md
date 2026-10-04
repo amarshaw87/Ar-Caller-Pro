@@ -96,8 +96,13 @@ The application workspace utilizes high-contrast accessibility tokens driven dyn
 * **Light Theme State:** Pure solid white background canvas (`#FFFFFF`), pastel light purple layout component bands (`#E6E0F8`), and stark solid black typography font tracking for absolute readability.
 * **Dark Theme State:** Deep solid matte black background canvas (`#000000`), rich dark forest green layout component bands (`#0B3F27`), and laser crisp white typography fonts to guarantee optimal visibility.
 
-## 👨‍💻 Designed & Developed by
+---
 
-​Amar Shaw
-​Accounts Receivable Analyst & RCM Specialist • Full-Stack Web Developer
-Transforming US Healthcare Operational Friction into High-Velocity Web Automation.
+### 👨‍💻 Designed & Developed by
+
+## Amar Shaw
+
+**Accounts Receivable Analyst & RCM Specialist • Full-Stack Web Developer**
+
+> Transforming US Healthcare Operational Friction into High-Velocity Web Automation.
+
