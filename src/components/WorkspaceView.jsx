@@ -117,7 +117,6 @@ export default function WorkspaceView({
           💾 Download Updated scenarios.json File
         </button>
       )}
-
       {/* 3. DYNAMIC INDEX DIRECTORY INTERNET SUB-LINKS GRID */}
       <div className="p-4 border border-gray-400/20 rounded bg-gray-500/5">
         <h3 className="text-xs font-bold uppercase tracking-wider mb-3 opacity-60">Completed Interactive Dialogue Modules</h3>
@@ -206,7 +205,6 @@ export default function WorkspaceView({
                 let hasSplit = false
                 const leftBranch = []
                 const rightBranch = []
-                let currentBranch = null
 
                 lines.forEach((line) => {
                   const trimmed = line.trim()
@@ -216,21 +214,13 @@ export default function WorkspaceView({
                   }
 
                   if (hasSplit) {
-                    const upper = trimmed.toUpperCase()
-                    if (upper.includes('HAS MET') && !upper.includes('NOT MET') && !upper.includes('EXCLUDING')) {
-                      currentBranch = 'left'
-                    } else if (upper.includes('ALREADY MET') || upper.includes('EXCLUDING')) {
-                      currentBranch = 'right'
-                    } else if (upper.includes('NOT MET')) {
-                      currentBranch = 'left'
-                    }
-
-                    if (currentBranch === 'left') {
-                      leftBranch.push(trimmed)
-                    } else if (currentBranch === 'right') {
-                      rightBranch.push(trimmed)
+                    if (trimmed.includes('|')) {
+                      const parts = trimmed.split('|')
+                      if (parts[0]) leftBranch.push(parts[0].trim())
+                      if (parts[1]) rightBranch.push(parts[1].trim())
                     } else {
-                      if (leftBranch.length <= rightBranch.length) {
+                      const upper = trimmed.toUpperCase()
+                      if (upper.includes('FAX') || upper.includes('EOB') || (upper.includes('HAS MET') && !upper.includes('EXCLUDING')) || upper.includes('POLICY ID')) {
                         leftBranch.push(trimmed)
                       } else {
                         rightBranch.push(trimmed)
@@ -242,30 +232,33 @@ export default function WorkspaceView({
                 })
 
                 const renderLineItem = (text, idx) => {
-                  const isArrow = text === '↓' || text === '│'
+                  const isArrow = text === '↓' || text === '│' || text === '↓ | ↓' || text === '| ↓'
                   if (isArrow) {
-                    return <div key={idx} className="text-center text-emerald-500 font-black text-lg my-1 animate-pulse">↓</div>
+                    return <div key={idx} className="text-center text-zinc-600 dark:text-zinc-400 font-light text-base py-1">↓</div>
                   }
                   return (
-                    <div key={idx} className={`p-3 rounded-lg border text-center font-semibold text-sm max-w-xl mx-auto shadow-sm tracking-wide leading-relaxed ${darkMode ? 'bg-zinc-900 border-zinc-800 text-zinc-100' : 'bg-white border-gray-200 text-gray-800'}`}>
+                    <div key={idx} className="text-center font-normal font-serif text-sm leading-relaxed max-w-xl mx-auto py-1 px-4 text-zinc-900 dark:text-zinc-100 antialiased select-none">
                       {text}
                     </div>
                   )
                 }
 
                 return (
-                  <div className="w-full space-y-4 max-w-5xl mx-auto">
-                    <div className="flex flex-col items-center space-y-2">
+                  <div className="w-full max-w-4xl mx-auto p-4 font-serif">
+                    <div className="flex flex-col items-center space-y-1">
                       {initialFlow.map((line, idx) => renderLineItem(line, idx))}
                     </div>
                     {hasSplit && (
-                      <div className="space-y-2">
-                        <div className="text-center text-emerald-500 font-black text-xl tracking-widest">↙ &nbsp; &nbsp; ↘</div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start pt-2">
-                          <div className="space-y-2 p-4 rounded-xl border border-gray-400/10 bg-gray-500/5">
+                      <div className="w-full flex flex-col items-center mt-2">
+                        <div className="w-full max-w-xl flex justify-between items-center text-zinc-500 font-semibold text-lg px-24 my-2">
+                          <span>↙</span>
+                          <span>↘</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-12 items-start w-full max-w-3xl pt-2">
+                          <div className="flex flex-col items-center space-y-2 w-full text-center">
                             {leftBranch.map((line, idx) => renderLineItem(line, `l-${idx}`))}
                           </div>
-                          <div className="space-y-2 p-4 rounded-xl border border-gray-400/10 bg-gray-500/5">
+                          <div className="flex flex-col items-center space-y-2 w-full text-center">
                             {rightBranch.map((line, idx) => renderLineItem(line, `r-${idx}`))}
                           </div>
                         </div>
@@ -277,7 +270,6 @@ export default function WorkspaceView({
 
             </div>
           </div>
-
           {/* DYNAMIC FLOWCHART ANCHOR */}
           <div className="p-4 border border-dashed border-gray-400/40 rounded bg-gray-500/5 flex flex-col justify-center items-center text-center">
             <span className="text-[10px] uppercase font-mono tracking-widest opacity-40 mb-1">[ Flowchart Visualization Canvas File Anchor ]</span>
