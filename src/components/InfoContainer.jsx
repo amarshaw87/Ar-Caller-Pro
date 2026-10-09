@@ -269,68 +269,70 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
           </div>
         </form>
       ) : (
-                /* Public Read-Only Layout Presentation Frame for Students */
-        <div className="space-y-6 max-w-5xl mx-auto p-2">
+        /* Public Read-Only Layout Presentation Frame for Students */
+        <div className="max-w-4xl mx-auto p-6 font-serif select-none">
           
-          {/* DYNAMIC BRANCHING FORMAT: Used if structured JSON objects are available */}
+          {/* DYNAMIC BRANCHING FORMAT: For perfectly structured flow text */}
           {pageData.topStem ? (
-            <>
-              {/* 1. TOP STEM: Center-aligned vertical flow */}
-              <div className="flex flex-col items-center space-y-3">
+            <div className="flex flex-col items-center w-full">
+              
+              {/* 1. TOP STEM: Single line sequence with dynamic arrow layers */}
+              <div className="flex flex-col items-center w-full space-y-2 text-sm text-zinc-900 dark:text-zinc-100 antialiased">
                 {pageData.topStem.map((step, idx) => (
                   <React.Fragment key={step.id}>
-                    <div className={`p-4 border rounded shadow-sm text-center font-medium max-w-md w-full ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-200 text-black'}`}>
+                    <div className="text-center py-1 px-4 leading-relaxed font-normal tracking-wide max-w-xl">
                       {step.text}
                     </div>
                     {idx < pageData.topStem.length - 1 && (
-                      <div className="text-emerald-500 font-bold text-lg">↓</div>
+                      <div className="text-zinc-600 dark:text-zinc-400 font-light text-base py-1">↓</div>
                     )}
                   </React.Fragment>
                 ))}
               </div>
 
-              {/* 2. SPLIT ARROW: Center split marker */}
+              {/* 2. SPLIT ARROW BRANCH: Perfectly scaled flowchart directional indicators */}
               {pageData.branches && (
-                <div className="text-center text-emerald-500 font-bold text-2xl tracking-[4rem] pl-[4rem] my-4">
-                  ↙↘
+                <div className="w-full max-w-2xl flex justify-between items-center text-zinc-500 font-semibold text-lg px-24 my-2">
+                  <span>↙</span>
+                  <span>↘</span>
                 </div>
               )}
 
-              {/* 3. PARALLEL BRANCHES: Side-by-side layout split */}
+              {/* 3. PARALLEL TEXT MATRIX: Seamless side by side text logic pathways */}
               {pageData.branches && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full">
+                <div className="grid grid-cols-2 gap-x-12 items-start w-full max-w-3xl text-zinc-900 dark:text-zinc-100 antialiased text-xs">
                   
-                  {/* LEFT COLUMN BRANCH */}
-                  <div className={`p-5 border rounded-lg shadow-sm flex flex-col items-center space-y-4 ${darkMode ? 'bg-zinc-900/40 border-zinc-800' : 'bg-gray-50/50 border-gray-200'}`}>
-                    <div className="text-center font-bold text-xs uppercase tracking-wider text-red-500 border-b border-gray-400/20 pb-2 w-full">
+                  {/* LEFT FLOW PIPELINE */}
+                  <div className="flex flex-col items-center space-y-2 w-full text-center">
+                    <div className="font-bold text-center leading-relaxed tracking-tight px-2">
                       {pageData.branches.leftColumn.condition}
                     </div>
-                    <div className="text-emerald-500 font-bold text-lg">↓</div>
+                    <div className="text-zinc-600 dark:text-zinc-400 font-light text-sm">↓</div>
                     {pageData.branches.leftColumn.steps && pageData.branches.leftColumn.steps.map((step, idx) => (
                       <React.Fragment key={step.id}>
-                        <div className={`p-4 border rounded shadow-xs text-center text-xs font-semibold w-full ${darkMode ? 'bg-zinc-900 border-zinc-700 text-zinc-200' : 'bg-white border-gray-200 text-zinc-700'}`}>
+                        <div className="font-normal leading-relaxed tracking-wide px-3">
                           {step.text}
                         </div>
                         {idx < pageData.branches.leftColumn.steps.length - 1 && (
-                          <div className="text-emerald-500 font-bold text-sm">↓</div>
+                          <div className="text-zinc-600 dark:text-zinc-400 font-light text-xs">↓</div>
                         )}
                       </React.Fragment>
                     ))}
                   </div>
 
-                  {/* RIGHT COLUMN BRANCH */}
-                  <div className={`p-5 border rounded-lg shadow-sm flex flex-col items-center space-y-4 ${darkMode ? 'bg-zinc-900/40 border-zinc-800' : 'bg-gray-50/50 border-gray-200'}`}>
-                    <div className="text-center font-bold text-xs uppercase tracking-wider text-emerald-500 border-b border-gray-400/20 pb-2 w-full">
+                  {/* RIGHT FLOW PIPELINE */}
+                  <div className="flex flex-col items-center space-y-2 w-full text-center">
+                    <div className="font-bold text-center leading-relaxed tracking-tight px-2">
                       {pageData.branches.rightColumn.condition}
                     </div>
-                    <div className="text-emerald-500 font-bold text-lg">↓</div>
+                    <div className="text-zinc-600 dark:text-zinc-400 font-light text-sm">↓</div>
                     {pageData.branches.rightColumn.steps && pageData.branches.rightColumn.steps.map((step, idx) => (
                       <React.Fragment key={step.id}>
-                        <div className={`p-4 border rounded shadow-xs text-center text-xs font-semibold w-full ${darkMode ? 'bg-zinc-900 border-zinc-700 text-zinc-200' : 'bg-white border-gray-200 text-zinc-700'}`}>
+                        <div className="font-normal leading-relaxed tracking-wide px-3">
                           {step.text}
                         </div>
                         {idx < pageData.branches.rightColumn.steps.length - 1 && (
-                          <div className="text-emerald-500 font-bold text-sm">↓</div>
+                          <div className="text-zinc-600 dark:text-zinc-400 font-light text-xs">↓</div>
                         )}
                       </React.Fragment>
                     ))}
@@ -338,16 +340,10 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
 
                 </div>
               )}
-            </>
+            </div>
           ) : (
-            /* OLD FALLBACK FORMAT: Used if standard unstructured text data is processed */
-            <div 
-              className={`whitespace-pre-wrap leading-relaxed text-sm opacity-90 text-left p-4 rounded border border-gray-400/10 ${
-                (pageData.body && (pageData.body.includes('↓') || pageData.body.includes('↙'))) 
-                  ? 'font-mono text-xs overflow-x-auto bg-gray-500/5' 
-                  : 'font-sans text-sm'
-              }`}
-            >
+            /* OLD FALLBACK FORMAT: Normal pre wrap interface context */
+            <div className="whitespace-pre-wrap leading-relaxed text-sm opacity-90 text-left p-4 font-serif">
               {pageData.body}
             </div>
           )}
@@ -357,3 +353,4 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     </div>
   )
 }
+
