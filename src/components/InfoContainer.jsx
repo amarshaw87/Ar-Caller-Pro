@@ -341,14 +341,19 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
             </>
           ) : (
             /* OLD FALLBACK FORMAT: Used if standard unstructured text data is processed */
-            <div className={`whitespace-pre-wrap leading-relaxed text-sm opacity-90 text-left p-4 rounded border border-gray-400/10 ${
-              (pageData.body && (pageData.body.includes('↓') || pageData.body.includes('↙'))) 
-                ? 'font-mono text-xs overflow-x-auto bg-gray-500/5' 
-                : 'font-sans text-sm'
-            }`}>
+            <div 
+              className={`whitespace-pre-wrap leading-relaxed text-sm opacity-90 text-left p-4 rounded border border-gray-400/10 ${
+                (pageData.body && (pageData.body.includes('↓') || pageData.body.includes('↙'))) 
+                  ? 'font-mono text-xs overflow-x-auto bg-gray-500/5' 
+                  : 'font-sans text-sm'
+              }`}
+            >
               {pageData.body}
             </div>
           )}
 
         </div>
       )}
+    </div>
+  )
+}
