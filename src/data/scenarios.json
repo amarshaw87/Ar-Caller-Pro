@@ -1,26 +1,41 @@
 {
-  "no_claim_on_file": {
-    "id": "no_claim_on_file",
-    "title": "No Claim on File",
+  "claim_applied_toward_deductible": {
+    "id": "claim_applied_toward_deductible",
+    "title": "Claim Applied Toward Deductible",
     "category": "AR SCENARIO",
     "onCallAnalysis": [
-      "When getting the status as no claim on file, always check the clearinghouse whether the claim was sent to insurance or it is rejected, if it is rejected then work as per the rejection.",
-      "There could be more than one CPTs billed on the same DOS or two DOS could be billed in a single claim form, so always open the claim form and provide the DOS range and total billed amount as mentioned in the claim form.",
-      "POTF stands for Proof of timely filing. You can consider the below proof as POTF if these occurred within TFL: An initial filed claim to the same insurance which is not received by the payer. Initially rejected claims. Initial billing to any other payer."
+      "Review the processing date and verify the allowed amount details.",
+      "Check the total policy deductible limit to confirm remaining exposure.",
+      "Evaluate what total amount the patient has met including this current claim sequence."
     ],
-    "flowchartCodeText": "                                      No claim on file\n                                             ↓\n                       May I have policy effective and termed date?\n                                             ↓\n                    Check DOS lies between effective and termed date\n                     ↙                                             ↘\n                 Yes                                                 No\n                  ↓                                                   ↓\n         May I have the TFL? ← ←                           Is there any other policy\n                  ↓             ↖                         active for the patient on DOS?\n         Check DOS lies          ↖                          ↙                        ↘\n           within TFL             ↖                       Yes                         No\n           ↙        ↘              ↖                       ↓                          ↓\n         Yes         No             ↖                  May I have                  May I get\n          ↓           ↓              ← ← ← ← ← ← ←   Policy ID, Policy            call ref#?\n    May I have    Can we fax or                      effective and\n    claim mail     mail claim                        termed Date?\n    address, PA    with POTF?\n    ID, Fax#?       ↙       ↘\n        ↓          No       Yes\n    May I get      ↓         ↓\n    call ref#? ───→ ↖   May I have Fax#\n                        or Mail address\n                        to send claim\n                        with POTF?\n                             ↓\n                        May I get\n                        call ref#?",
+    "topStem": [
+      { "id": "step1", "text": "Claim applied toward Deductible" },
+      { "id": "step2", "text": "May I have the processed date?" },
+      { "id": "step3", "text": "What is the Allowed Amount(AA)?" },
+      { "id": "step4", "text": "How much is the total deductible limit on the policy?" },
+      { "id": "step5", "text": "How much has patient met including this claim?" }
+    ],
+    "branches": {
+      "leftColumn": {
+        "condition": "If patient has met the deductible including this claim / Patient has not met the deductible including this claim",
+        "steps": [
+          { "id": "left_step1", "text": "Could you please fax the EOB? If not then mail it or provide the source to get the EOB?" },
+          { "id": "left_step2", "text": "May I have the claim# & call ref#?" }
+        ]
+      },
+      "rightColumn": {
+        "condition": "If patient has already met the deductible excluding this claim",
+        "steps": [
+          { "id": "right_step1", "text": "Could you please send the claim back for reprocessing since patient has already met his deductible excluding this claim?" },
+          { "id": "right_step2", "text": "What is the Turn around time(TAT) for reprocessing?" },
+          { "id": "right_step3", "text": "May I have the claim# & call ref#?" }
+        ]
+      }
+    },
     "importantNotesAndActions": [
-      "Please take action as per your process update. Below actions can be different from your process update.",
-      "If the patient policy is active on DOS and DOS lies within TFL and the payer ID & mailing address are the same as the system details then you can resubmit the claim.",
-      "If the payer ID provided by the rep is different than the payer ID mentioned in the system then search for the correct payer ID, update the correct plan code, and resubmit the claim.",
-      "If the correct payer ID is not available then Fax the claim if the Fax# is provided by the rep or else drop the claim through paper.",
-      "Always give priority to the submission of a claim via payer id or Fax# since sending a claim via mail takes a longer time.",
-      "If the patient policy is active on DOS and DOS has crossed the TFL and the rep confirms that you cannot fax or mail the claim along with POTF then resubmit the claim. Once TFL denial receives then you can send an appeal with POTF.",
-      "If the patient policy is active on DOS and DOS has crossed the TFL and the rep confirms that you can fax or mail the claim along with POTF then fax/mail the claim along with POTF. (Sometimes, the client wants to resubmit the claim instead of mailing or faxing the claim with POTF and waiting for TFL denial, and then sending the appeal. So, work as per the instructions.)",
-      "If there is no POTF and the claim was billed after TFL was crossed then the claim needs to be written off.",
-      "If the patient's policy was inactive on DOS and the rep provided the details of another active policy of the patient then before resubmitting the claim update the correct policy ID given by the rep.",
-      "If the patient's policy was inactive on DOS and no other active policy is available then release the claim to the patient if there is no other insurance available in the system.",
-      "If the other insurance is available in the system then check the eligibility for that insurance and if the policy is active on DOS then make that insurance as primary insurance and submit the claim."
+      "Always verify the exact effective dates of the policy before requesting a claim reprocessing action.",
+      "If the payer indicates that the EOB cannot be faxed, document the call reference number and alternative retrieval portal link.",
+      "Confirm if additional structural cross-checks are required for multiple active plan limits."
     ]
   }
 }
