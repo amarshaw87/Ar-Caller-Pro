@@ -20,7 +20,6 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
   const isInsuranceMatrixView = normalizedKey.includes('PH') || normalizedKey.includes('INS')
   const isTflMatrixView = normalizedKey.includes('TFL')
   const isInteractiveTable = isInsuranceMatrixView || isTflMatrixView
-
   // Sync state modifications smoothly when moving between tabs
   useEffect(() => {
     setEditTitle(pageData.title)
@@ -60,7 +59,8 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
       setPhoneRecords([])
     }
   }, [tabKey, data, isInteractiveTable])
-    // Serializes table actions back to the raw string format with correct dividers
+
+  // Serializes table actions back to the raw string format with correct dividers
   const saveRecordsToDatabase = (updatedRecords) => {
     const separator = isInsuranceMatrixView ? ' : ' : '                  '
     const serializedBody = updatedRecords
@@ -109,7 +109,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
   const actionButtonText = isInsuranceMatrixView ? '➕ Add New Ins Phone Number' : '➕ Add New TFL Rule'
   const formHeaderLabel = isInsuranceMatrixView ? 'Insurance Phone Record' : 'Timely Filing Rule'
 
-  return (
+    return (
     <div className="space-y-6">
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
@@ -143,6 +143,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
           </div>
         )}
       </div>
+
       {/* UNIVERSAL ADMINISTRATIVE FORM PANEL */}
       {isInteractiveTable && showAddForm && (
         <form onSubmit={handleAddSubmit} className="p-4 border border-gray-400/20 rounded bg-gray-500/5 max-w-xl space-y-3">
@@ -177,7 +178,6 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
           </div>
         </form>
       )}
-
       {/* INTERACTIVE TABLE GRID CONTAINER */}
       {isInteractiveTable ? (
         <div className="w-full overflow-x-auto border border-gray-400/20 rounded-lg shadow-sm bg-gray-500/5">
@@ -270,17 +270,70 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
         </form>
       ) : (
         /* Public Read-Only Layout Presentation Frame for Students */
-        <div className="space-y-4 max-w-4xl">
-          <h1 className="text-2xl font-bold tracking-tight border-b border-gray-400/10 pb-2">{pageData.title}</h1>
-          <div 
-            className={`whitespace-pre-wrap leading-relaxed text-sm opacity-90 text-left p-4 rounded border border-gray-400/10 ${
-              (pageData.body && (pageData.body.includes('↓') || pageData.body.includes('↙'))) 
-                ? 'font-mono text-xs overflow-x-auto bg-gray-500/5' 
-                : 'font-sans text-sm'
-            }`}
-          >
-            {pageData.body}
+        <div className="space-y-6 max-w-5xl mx-auto p-2">
+          {/* 1. TOP STEM: Center-aligned vertical flow */}
+          <div className="flex flex-col items-center space-y-3">
+            {pageData.topStem && pageData.topStem.map((step, idx) => (
+              <React.Fragment key={step.id}>
+                <div className={`p-4 border rounded shadow-sm text-center font-medium max-w-md w-full ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-200 text-black'}`}>
+                  {step.text}
+                </div>
+                {idx < pageData.topStem.length - 1 && (
+                  <div className="text-emerald-500 font-bold text-lg">↓</div>
+                )}
+              </React.Fragment>
+            ))}
           </div>
+
+          {/* 2. SPLIT ARROW: Center split marker */}
+          {pageData.branches && (
+            <div className="text-center text-emerald-500 font-bold text-2xl tracking-[4rem] pl-[4rem] my-4">
+              ↙↘
+            </div>
+          )}
+
+          {/* 3. PARALLEL BRANCHES: Side-by-side layout split */}
+          {pageData.branches && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full">
+              
+              {/* LEFT COLUMN BRANCH */}
+              <div className={`p-5 border rounded-lg shadow-sm flex flex-col items-center space-y-4 ${darkMode ? 'bg-zinc-900/40 border-zinc-800' : 'bg-gray-50/50 border-gray-200'}`}>
+                <div className="text-center font-bold text-xs uppercase tracking-wider text-red-500 border-b border-gray-400/20 pb-2 w-full">
+                  {pageData.branches.leftColumn.condition}
+                </div>
+                <div className="text-emerald-500 font-bold text-lg">↓</div>
+                {pageData.branches.leftColumn.steps.map((step, idx) => (
+                  <React.Fragment key={step.id}>
+                    <div className={`p-4 border rounded shadow-xs text-center text-xs font-semibold w-full ${darkMode ? 'bg-zinc-900 border-zinc-700 text-zinc-200' : 'bg-white border-gray-200 text-zinc-700'}`}>
+                      {step.text}
+                    </div>
+                    {idx < pageData.branches.leftColumn.steps.length - 1 && (
+                      <div className="text-emerald-500 font-bold text-sm">↓</div>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+
+              {/* RIGHT COLUMN BRANCH */}
+              <div className={`p-5 border rounded-lg shadow-sm flex flex-col items-center space-y-4 ${darkMode ? 'bg-zinc-900/40 border-zinc-800' : 'bg-gray-50/50 border-gray-200'}`}>
+                <div className="text-center font-bold text-xs uppercase tracking-wider text-emerald-500 border-b border-gray-400/20 pb-2 w-full">
+                  {pageData.branches.rightColumn.condition}
+                </div>
+                <div className="text-emerald-500 font-bold text-lg">↓</div>
+                {pageData.branches.rightColumn.steps.map((step, idx) => (
+                  <React.Fragment key={step.id}>
+                    <div className={`p-4 border rounded shadow-xs text-center text-xs font-semibold w-full ${darkMode ? 'bg-zinc-900 border-zinc-700 text-zinc-200' : 'bg-white border-gray-200 text-zinc-700'}`}>
+                      {step.text}
+                    </div>
+                    {idx < pageData.branches.rightColumn.steps.length - 1 && (
+                      <div className="text-emerald-500 font-bold text-sm">↓</div>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+
+            </div>
+          )}
         </div>
       )}
 
