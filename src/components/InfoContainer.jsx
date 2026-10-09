@@ -269,75 +269,86 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
           </div>
         </form>
       ) : (
-        /* Public Read-Only Layout Presentation Frame for Students */
+                /* Public Read-Only Layout Presentation Frame for Students */
         <div className="space-y-6 max-w-5xl mx-auto p-2">
-          {/* 1. TOP STEM: Center-aligned vertical flow */}
-          <div className="flex flex-col items-center space-y-3">
-            {pageData.topStem && pageData.topStem.map((step, idx) => (
-              <React.Fragment key={step.id}>
-                <div className={`p-4 border rounded shadow-sm text-center font-medium max-w-md w-full ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-200 text-black'}`}>
-                  {step.text}
-                </div>
-                {idx < pageData.topStem.length - 1 && (
-                  <div className="text-emerald-500 font-bold text-lg">↓</div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-
-          {/* 2. SPLIT ARROW: Center split marker */}
-          {pageData.branches && (
-            <div className="text-center text-emerald-500 font-bold text-2xl tracking-[4rem] pl-[4rem] my-4">
-              ↙↘
-            </div>
-          )}
-
-          {/* 3. PARALLEL BRANCHES: Side-by-side layout split */}
-          {pageData.branches && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full">
-              
-              {/* LEFT COLUMN BRANCH */}
-              <div className={`p-5 border rounded-lg shadow-sm flex flex-col items-center space-y-4 ${darkMode ? 'bg-zinc-900/40 border-zinc-800' : 'bg-gray-50/50 border-gray-200'}`}>
-                <div className="text-center font-bold text-xs uppercase tracking-wider text-red-500 border-b border-gray-400/20 pb-2 w-full">
-                  {pageData.branches.leftColumn.condition}
-                </div>
-                <div className="text-emerald-500 font-bold text-lg">↓</div>
-                {pageData.branches.leftColumn.steps.map((step, idx) => (
+          
+          {/* DYNAMIC BRANCHING FORMAT: Used if structured JSON objects are available */}
+          {pageData.topStem ? (
+            <>
+              {/* 1. TOP STEM: Center-aligned vertical flow */}
+              <div className="flex flex-col items-center space-y-3">
+                {pageData.topStem.map((step, idx) => (
                   <React.Fragment key={step.id}>
-                    <div className={`p-4 border rounded shadow-xs text-center text-xs font-semibold w-full ${darkMode ? 'bg-zinc-900 border-zinc-700 text-zinc-200' : 'bg-white border-gray-200 text-zinc-700'}`}>
+                    <div className={`p-4 border rounded shadow-sm text-center font-medium max-w-md w-full ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-200 text-black'}`}>
                       {step.text}
                     </div>
-                    {idx < pageData.branches.leftColumn.steps.length - 1 && (
-                      <div className="text-emerald-500 font-bold text-sm">↓</div>
+                    {idx < pageData.topStem.length - 1 && (
+                      <div className="text-emerald-500 font-bold text-lg">↓</div>
                     )}
                   </React.Fragment>
                 ))}
               </div>
 
-              {/* RIGHT COLUMN BRANCH */}
-              <div className={`p-5 border rounded-lg shadow-sm flex flex-col items-center space-y-4 ${darkMode ? 'bg-zinc-900/40 border-zinc-800' : 'bg-gray-50/50 border-gray-200'}`}>
-                <div className="text-center font-bold text-xs uppercase tracking-wider text-emerald-500 border-b border-gray-400/20 pb-2 w-full">
-                  {pageData.branches.rightColumn.condition}
+              {/* 2. SPLIT ARROW: Center split marker */}
+              {pageData.branches && (
+                <div className="text-center text-emerald-500 font-bold text-2xl tracking-[4rem] pl-[4rem] my-4">
+                  ↙↘
                 </div>
-                <div className="text-emerald-500 font-bold text-lg">↓</div>
-                {pageData.branches.rightColumn.steps.map((step, idx) => (
-                  <React.Fragment key={step.id}>
-                    <div className={`p-4 border rounded shadow-xs text-center text-xs font-semibold w-full ${darkMode ? 'bg-zinc-900 border-zinc-700 text-zinc-200' : 'bg-white border-gray-200 text-zinc-700'}`}>
-                      {step.text}
-                    </div>
-                    {idx < pageData.branches.rightColumn.steps.length - 1 && (
-                      <div className="text-emerald-500 font-bold text-sm">↓</div>
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
+              )}
 
+              {/* 3. PARALLEL BRANCHES: Side-by-side layout split */}
+              {pageData.branches && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full">
+                  
+                  {/* LEFT COLUMN BRANCH */}
+                  <div className={`p-5 border rounded-lg shadow-sm flex flex-col items-center space-y-4 ${darkMode ? 'bg-zinc-900/40 border-zinc-800' : 'bg-gray-50/50 border-gray-200'}`}>
+                    <div className="text-center font-bold text-xs uppercase tracking-wider text-red-500 border-b border-gray-400/20 pb-2 w-full">
+                      {pageData.branches.leftColumn.condition}
+                    </div>
+                    <div className="text-emerald-500 font-bold text-lg">↓</div>
+                    {pageData.branches.leftColumn.steps && pageData.branches.leftColumn.steps.map((step, idx) => (
+                      <React.Fragment key={step.id}>
+                        <div className={`p-4 border rounded shadow-xs text-center text-xs font-semibold w-full ${darkMode ? 'bg-zinc-900 border-zinc-700 text-zinc-200' : 'bg-white border-gray-200 text-zinc-700'}`}>
+                          {step.text}
+                        </div>
+                        {idx < pageData.branches.leftColumn.steps.length - 1 && (
+                          <div className="text-emerald-500 font-bold text-sm">↓</div>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+
+                  {/* RIGHT COLUMN BRANCH */}
+                  <div className={`p-5 border rounded-lg shadow-sm flex flex-col items-center space-y-4 ${darkMode ? 'bg-zinc-900/40 border-zinc-800' : 'bg-gray-50/50 border-gray-200'}`}>
+                    <div className="text-center font-bold text-xs uppercase tracking-wider text-emerald-500 border-b border-gray-400/20 pb-2 w-full">
+                      {pageData.branches.rightColumn.condition}
+                    </div>
+                    <div className="text-emerald-500 font-bold text-lg">↓</div>
+                    {pageData.branches.rightColumn.steps && pageData.branches.rightColumn.steps.map((step, idx) => (
+                      <React.Fragment key={step.id}>
+                        <div className={`p-4 border rounded shadow-xs text-center text-xs font-semibold w-full ${darkMode ? 'bg-zinc-900 border-zinc-700 text-zinc-200' : 'bg-white border-gray-200 text-zinc-700'}`}>
+                          {step.text}
+                        </div>
+                        {idx < pageData.branches.rightColumn.steps.length - 1 && (
+                          <div className="text-emerald-500 font-bold text-sm">↓</div>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+
+                </div>
+              )}
+            </>
+          ) : (
+            /* OLD FALLBACK FORMAT: Used if standard unstructured text data is processed */
+            <div className={`whitespace-pre-wrap leading-relaxed text-sm opacity-90 text-left p-4 rounded border border-gray-400/10 ${
+              (pageData.body && (pageData.body.includes('↓') || pageData.body.includes('↙'))) 
+                ? 'font-mono text-xs overflow-x-auto bg-gray-500/5' 
+                : 'font-sans text-sm'
+            }`}>
+              {pageData.body}
             </div>
           )}
+
         </div>
       )}
-
-    </div>
-  )
-}
-
