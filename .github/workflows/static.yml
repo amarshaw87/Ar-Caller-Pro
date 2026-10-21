@@ -27,11 +27,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm' # Speeds up future builds automatically
+          # REMOVED cache: 'npm' to prevent errors when package-lock.json is missing
 
-      # CHANGED: Swapped npm install for npm ci to ensure clean package resolution
       - name: Install System Code Dependencies
-        run: npm ci
+        # CHANGED: Reverted to npm install so it runs successfully without a lockfile
+        run: npm install
 
       - name: Compile Production Code Build (Vite Distribution Pack)
         run: npm run build
