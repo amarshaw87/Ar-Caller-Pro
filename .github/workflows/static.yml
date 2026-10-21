@@ -27,9 +27,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm' # Speeds up future builds automatically
 
+      # CHANGED: Swapped npm install for npm ci to ensure clean package resolution
       - name: Install System Code Dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci
 
       - name: Compile Production Code Build (Vite Distribution Pack)
         run: npm run build
