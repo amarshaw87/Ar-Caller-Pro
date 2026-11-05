@@ -13,7 +13,7 @@ export default function LoginGateway({ onLoginSuccess, darkMode, setDarkMode }) 
     const cleanUser = username.trim()
     const cleanPass = password.trim()
 
-    // 🔐 ADMIN ACCESS CREDENTIALS GATE (Locked with your original password)
+    // 🔐 ADMIN ACCESS CREDENTIALS GATE
     if (cleanPass === 'AmarShaw_Admin_Pro') {
       onLoginSuccess({
         username: cleanUser || 'Amar Shaw (Admin)',
@@ -35,13 +35,14 @@ export default function LoginGateway({ onLoginSuccess, darkMode, setDarkMode }) 
   }
 
   return (
-    <div className={`w-full min-h-screen flex font-sans transition-colors duration-300 ${darkMode ? 'bg-zinc-950 text-white' : 'bg-gray-50 text-gray-900'}`}>
+    // STRICT 50/50 GRID FRAMEWORK FOR PERFECT BALANCED EQUAL SPLIT
+    <div className={`w-full min-h-screen grid grid-cols-1 lg:grid-cols-2 font-sans transition-colors duration-300 ${darkMode ? 'bg-zinc-950 text-white' : 'bg-gray-50 text-gray-900'}`}>
       
-      {/* ================= LEFT COLUMN: SECURE SIGN-IN FORM MATRIX ================= */}
-      <div className={`w-full lg:w-[45%] flex flex-col justify-center px-8 sm:px-16 lg:px-12 xl:px-24 border-r transition-colors shadow-2xl z-10 ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-200'}`}>
-        <div className="w-full max-w-md mx-auto space-y-6">
+      {/* ================= LEFT SIDE: SECURE SIGN-IN FORM (PERFECTLY CENTERED) ================= */}
+      <div className={`w-full h-full flex flex-col justify-center items-center px-8 sm:px-16 lg:px-20 border-r transition-colors shadow-2xl z-10 ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-200'}`}>
+        <div className="w-full max-w-md space-y-6 py-8">
           
-          {/* Logo Framework Bar with Integrated Top-Level Theme Controller Toggle */}
+          {/* Logo Framework Bar with Integrated Theme Toggle */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 bg-gradient-to-tr from-amber-500 to-emerald-600 rounded-lg flex items-center justify-center text-white font-black text-xl shadow-md select-none">
@@ -84,11 +85,11 @@ export default function LoginGateway({ onLoginSuccess, darkMode, setDarkMode }) 
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="e.g., student (or leave blank if using Token)"
-                className={`w-full px-3 py-2 text-xs border rounded outline-none transition-all font-medium ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white focus:border-emerald-500' : 'bg-gray-50/50 border-gray-300 text-black focus:border-blue-600'}`}
+                className={`w-full px-3 py-2.5 text-xs border rounded outline-none transition-all font-medium ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white focus:border-emerald-500' : 'bg-gray-50/50 border-gray-300 text-black focus:border-blue-600'}`}
               />
             </div>
 
-            {/* Input 2: Access Token / Password Box with Custom Lock Toggle */}
+            {/* Input 2: Access Token / Password Box */}
             <div className="flex flex-col gap-1.5 relative">
               <label className="text-[10px] font-black uppercase tracking-wider text-gray-700 dark:text-zinc-300">Access Token / Password:*</label>
               <div className="relative">
@@ -98,7 +99,7 @@ export default function LoginGateway({ onLoginSuccess, darkMode, setDarkMode }) 
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="Enter student or your private Admin token"
-                  className={`w-full px-3 py-2 text-xs border rounded outline-none transition-all font-mono ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white focus:border-emerald-500' : 'bg-gray-50/50 border-gray-300 text-black focus:border-blue-600'}`}
+                  className={`w-full px-3 py-2.5 text-xs border rounded outline-none transition-all font-mono ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white focus:border-emerald-500' : 'bg-gray-50/50 border-gray-300 text-black focus:border-blue-600'}`}
                 />
                 <button 
                   type="button" 
@@ -110,11 +111,11 @@ export default function LoginGateway({ onLoginSuccess, darkMode, setDarkMode }) 
               </div>
             </div>
 
-            {/* Form Actions Fire Trigger Button */}
+            {/* Trigger Button */}
             <div className="pt-2">
               <button 
                 type="submit"
-                className={`w-full py-2.5 font-black rounded text-xs transition-colors shadow-md tracking-widest uppercase ${darkMode ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                className={`w-full py-3 font-black rounded text-xs transition-colors shadow-md tracking-widest uppercase ${darkMode ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
               >
                 Authenticate Profile Access
               </button>
@@ -122,7 +123,7 @@ export default function LoginGateway({ onLoginSuccess, darkMode, setDarkMode }) 
 
           </form>
 
-          {/* Verification Helper Links Mapping */}
+          {/* Verification Helper Links */}
           <div className="flex items-center justify-between text-[11px] font-bold border-t border-gray-400/10 pt-4">
             <button type="button" onClick={() => { setUsername('student'); setPassword('student'); }} className="text-blue-600 dark:text-emerald-400 hover:underline">Forgot your user ID?</button>
             <button type="button" onClick={() => { setUsername('student'); setPassword('student'); }} className="text-blue-600 dark:text-emerald-400 hover:underline">Forgot your password?</button>
@@ -134,14 +135,14 @@ export default function LoginGateway({ onLoginSuccess, darkMode, setDarkMode }) 
 
         </div>
       </div>
-      {/* ================= RIGHT COLUMN: OPERATIONAL ROI & FRESHER-FRIENDLY INFO ================= */}
-      <div className={`hidden lg:flex lg:w-[55%] flex-col justify-center px-16 xl:px-24 relative overflow-hidden transition-colors ${darkMode ? 'bg-zinc-950' : 'bg-gradient-to-br from-slate-50 via-slate-100 to-zinc-200'}`}>
+      {/* ================= RIGHT SIDE: OPERATIONAL ROI & CORPORATE INFO (PERFECTLY CENTERED) ================= */}
+      <div className={`hidden lg:flex h-full flex-col justify-center items-center px-16 xl:px-24 relative overflow-hidden transition-colors ${darkMode ? 'bg-zinc-950' : 'bg-gradient-to-br from-slate-50 via-slate-100 to-zinc-200'}`}>
         
         {/* Abstract graphic ambient meshes for high-end web layout look */}
         <div className={`absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl opacity-30 ${darkMode ? 'bg-emerald-500/5' : 'bg-emerald-500/10'}`}></div>
         <div className={`absolute -bottom-40 left-10 w-96 h-96 rounded-full blur-3xl opacity-30 ${darkMode ? 'bg-blue-500/5' : 'bg-blue-500/10'}`}></div>
 
-        <div className="w-full max-w-xl space-y-8 relative z-10">
+        <div className="w-full max-w-md space-y-8 relative z-10 py-8">
           
           <div className="space-y-3">
             <h3 className="text-2xl font-black tracking-tight">New to AR Caller Pro?</h3>
@@ -150,38 +151,38 @@ export default function LoginGateway({ onLoginSuccess, darkMode, setDarkMode }) 
             </p>
           </div>
 
-          {/* Capability Matrix Parameters Grid - Highly Optimized for Freshers & Beginners Positive Experience */}
+          {/* Capability Matrix Parameters Grid - High-Octane Corporate RCM Terminology */}
           <ul className="space-y-5 text-xs font-semibold text-gray-700 dark:text-zinc-300">
             
             <li className="flex items-start gap-3">
               <span className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500 text-emerald-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">✔</span>
               <div className="leading-relaxed">
-                <strong className="text-gray-900 dark:text-white block text-xs font-bold mb-0.5 text-emerald-500">🚀 Zero Phone Anxiety, 100% Confidence!</strong>
-                Ab US insurance agents se baat karte waqt darna nahi hai! Hamare step-by-step interactive navigation guides aapko floor par baithte hi ek expert caller bana denge.
+                <strong className="text-gray-900 dark:text-white block text-sm font-bold mb-0.5 text-emerald-500">🚀 Mitigate Phone Anxiety with Absolute Confidence</strong>
+                Never second-guess an insurance representative again. Our real-time interactive navigation vectors empower fresh analysts to counter tough payer objections instantly.
               </div>
             </li>
 
             <li className="flex items-start gap-3">
               <span className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500 text-emerald-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">✔</span>
               <div className="leading-relaxed">
-                <strong className="text-gray-900 dark:text-white block text-xs font-bold mb-0.5 text-emerald-500">✍️ Auto-Pilot Call Notes Generator</strong>
-                Mushkil aur lambe billing notes manually type karne ka jhanjhat khatam. Bas simple inputs fill kijiye aur aur audit-ready notes turant copy kijiye.
+                <strong className="text-gray-900 dark:text-white block text-sm font-bold mb-0.5 text-emerald-500">✍️ Automated Performance-Driven Account Notes</strong>
+                Eliminate the bottleneck of manual documentation. Feed critical parameters into the 20-field matrix to compile structured, audit-ready billing notes instantly.
               </div>
             </li>
 
             <li className="flex items-start gap-3">
               <span className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500 text-emerald-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">✔</span>
               <div className="leading-relaxed">
-                <strong className="text-gray-900 dark:text-white block text-xs font-bold mb-0.5 text-emerald-500">🎯 Super Easy Flowchart Matrix</strong>
-                Boring PDF manuals ya moti training books padhne ki bilkul zaroorat nahi hai. Saare claim denial rules ko ekdum saaf aur simple maps me dekhiye.
+                <strong className="text-gray-900 dark:text-white block text-sm font-bold mb-0.5 text-emerald-500">🎯 Symmetrical Dynamic Logic Tree Matrix</strong>
+                Bypass dense, outdated standard operating procedures (SOPs). Access complex CARC/RARC dispute paths through highly scannable visual navigation trees.
               </div>
             </li>
 
             <li className="flex items-start gap-3">
               <span className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500 text-emerald-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">✔</span>
               <div className="leading-relaxed">
-                <strong className="text-gray-900 dark:text-white block text-xs font-bold mb-0.5 text-emerald-500">🛡️ Fast Onboarding & Day-1 Ready</strong>
-                Yeh platform aapko bina kisi pressure ke, bohot hi aasan tarike se RCM hacks sikhata hai, taaki aap floor par pehle din se hi rock kar sakein!
+                <strong className="text-gray-900 dark:text-white block text-sm font-bold mb-0.5 text-emerald-500">🛡️ High-Velocity Floor Onboarding</strong>
+                Compress a standard 4-week training curve down to immediate Day-1 execution. Turn fresh trainees into top-tier production analysts with zero operational friction.
               </div>
             </li>
 
@@ -192,7 +193,7 @@ export default function LoginGateway({ onLoginSuccess, darkMode, setDarkMode }) 
             <button 
               type="button"
               onClick={() => onLoginSuccess({ username: 'Billing Student Trainee', role: 'user' })}
-              className={`px-5 py-2 border text-[10px] font-black uppercase tracking-widest rounded transition-all shadow-sm ${darkMode ? 'border-zinc-700 hover:bg-white hover:text-black bg-zinc-900' : 'border-gray-400 hover:bg-gray-900 hover:text-white hover:border-gray-900 bg-transparent'}`}
+              className={`px-5 py-2.5 border text-[10px] font-black uppercase tracking-widest rounded transition-all shadow-sm ${darkMode ? 'border-zinc-700 hover:bg-white hover:text-black bg-zinc-900' : 'border-gray-400 hover:bg-gray-900 hover:text-white hover:border-gray-900 bg-transparent'}`}
             >
               Explore Student Mode
             </button>
