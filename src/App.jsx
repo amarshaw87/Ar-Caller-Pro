@@ -179,7 +179,7 @@ export default function App() {
 
   // 8. Cloud Mutation Engine: Handles Inserting New Records for Insurance Directory ('INS PH#')
   const handleAddNewPhone = async (payer, phone) => {
-    setIsLoading(true)
+    // BACKGROUND SILENT UPDATES: Full terminal-style loader bypassed
     const { error } = await supabase.from('insurance_directory').insert([{ payer_name: payer.toUpperCase(), phone_number: phone }])
     if (error) {
       alert("Cloud Database Directory Error: " + error.message)
@@ -187,26 +187,24 @@ export default function App() {
       alert("📞 New Insurance record successfully pushed to the Cloud Ledger!")
       await loadCloudInsurancePhones()
     }
-    setIsLoading(false)
   }
 
   // 9. Cloud Mutation Engine: Handles Deleting Existing Row Entry vector for Insurance Directory
   const handleDeletePhone = async (idToDelete) => {
     if (window.confirm("Delete this insurance directory phone listing permanently?")) {
-      setIsLoading(true)
+      // BACKGROUND SILENT UPDATES: Full terminal-style loader bypassed
       const { error } = await supabase.from('insurance_directory').delete().eq('id', idToDelete)
       if (error) {
         alert("Database Erasure Fault: " + error.message)
       } else {
         await loadCloudInsurancePhones()
       }
-      setIsLoading(false)
     }
   }
 
   // 10. Cloud Mutation Engine: Handles Appending Dynamic New Timely Filing Threshold Rule Entries ('TFL')
   const handleAddNewTfl = async (insurance, limit) => {
-    setIsLoading(true)
+    // BACKGROUND SILENT UPDATES: Full terminal-style loader bypassed
     const { error } = await supabase.from('tfl_rules').insert([{ insurance_name: insurance, tfl_limit: limit }])
     if (error) {
       alert("Cloud Database TFL Engine Fault: " + error.message)
@@ -214,20 +212,18 @@ export default function App() {
       alert("🎯 New Timely Filing limit parameters published cleanly to remote layers!")
       await loadCloudTflRules()
     }
-    setIsLoading(false)
   }
 
   // 11. Cloud Mutation Engine: Handles Deleting Existing TFL Rule Row Entry Vector from Matrix
   const handleDeleteTfl = async (idToDelete) => {
     if (window.confirm("Delete this TFL rule vector permanently from cloud clusters?")) {
-      setIsLoading(true)
+      // BACKGROUND SILENT UPDATES: Full terminal-style loader bypassed
       const { error } = await supabase.from('tfl_rules').delete().eq('id', idToDelete)
       if (error) {
         alert("Database TFL Erasure Fault: " + error.message)
       } else {
         await loadCloudTflRules()
       }
-      setIsLoading(false)
     }
   }
 
@@ -445,7 +441,7 @@ export default function App() {
                             ❌ Delete
                           </button>
                         </td>
-                      )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
