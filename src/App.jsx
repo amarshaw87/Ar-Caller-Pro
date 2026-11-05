@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 
 import baseScenarios from './data/scenarios.json'
-import baseInsurancePh from './data/insurancePh.json'
-import baseTflRules from './data/tflRules.json'
 import baseContentData from './data/contentData.json'
 
 import Header from './components/Header'
@@ -22,15 +20,14 @@ export default function App() {
   const [activeScenarioKey, setActiveScenarioKey] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
+  // Cloud Unified State Registries
   const [scenarios, setScenarios] = useState({})
-  const [insurancePh, setInsurancePh] = useState(baseInsurancePh.records || baseInsurancePh) 
-  const [tflRules, setTflRules] = useState(baseTflRules.rules || baseTflRules)               
+  const [insurancePh, setInsurancePh] = useState([]) 
+  const [tflRules, setTflRules] = useState([])               
   const [contentData, setContentData] = useState(baseContentData)
 
+  // 1. Fetch Engine: Dialogue Scenarios Matrix
   const loadCloudDatabaseScenarios = async () => {
-    // SILENT RENDERING FIX: Commented out to prevent the full-screen terminal loading screen from flashing on tab changes
-    // setIsLoading(true)
-    
     const { data, error } = await supabase.from('scenarios').select('*')
     
     if (!error && data && data.length > 0) {
@@ -55,16 +52,61 @@ export default function App() {
         setActiveScenarioKey(filteredKeys[0])
       }
     }
-    setIsLoading(false)
   }
 
+  // 2. Fetch Engine: Static Content Knowledge Guides Matrix
+  const loadCloudStaticPages = async () => {
+    const { data, error } = await supabase.from('static_pages').select('*')
+    if (!error && data && data.length > 0) {
+      const formattedPages = {}
+      data.forEach(item => {
+        formattedPages[item.id] = { title: item.title, body: item.body }
+      })
+      setContentData(formattedPages)
+    }
+  }
+
+  // 3. Fetch Engine: Insurance Contact Number Directories
+  const loadCloudInsurancePhones = async () => {
+    const { data, error } = await supabase.from('insurance_directory').select('*').order('payer_name', { ascending: true })
+    if (!error && data) {
+      setInsurancePh(data)
+    }
+  }
+
+  // 4. Fetch Engine: Timely Filing Guideline Parameters
+  const loadCloudTflRules = async () => {
+    const { data, error } = await supabase.from('tfl_rules').select('*').order('insurance_name', { ascending: true })
+    if (!error && data) {
+      setTflRules(data)
+    }
+  }
+
+  // Concurrent Execution State Loader for Onboarding
+  useEffect(() => {
+    const initializeFullStackCloudSync = async () => {
+      if (currentUser) {
+        setIsLoading(true)
+        await Promise.all([
+          loadCloudDatabaseScenarios(),
+          loadCloudStaticPages(),
+          loadCloudInsurancePhones(),
+          loadCloudTflRules()
+        ])
+        setIsLoading(false)
+      } else {
+        setIsLoading(false)
+      }
+    }
+    initializeFullStackCloudSync()
+  }, [currentUser])
+
+  // Context Switch Listener Synchronization Block
   useEffect(() => {
     if (currentUser && (currentTab === 'AR SCENARIO' || currentTab === 'DENIALS')) {
       loadCloudDatabaseScenarios()
-    } else {
-      setIsLoading(false)
     }
-  }, [currentTab, currentUser])
+  }, [currentTab])
   useEffect(() => {
     const rootElement = document.documentElement
     if (darkMode) {
@@ -76,9 +118,9 @@ export default function App() {
     }
   }, [darkMode])
 
+  // 5. Cloud Mutation Engine: Safe Post Handler for Scenarios Dialogues
   const handleAddNewScenario = async (newObj) => {
     setIsLoading(true)
-    
     const preparedObj = {
       ...newObj,
       onCallAnalysis: Array.isArray(newObj.onCallAnalysis) 
@@ -88,7 +130,6 @@ export default function App() {
         ? newObj.importantNotesAndActions.join('\n')
         : (newObj.importantNotesAndActions || '')
     }
-
     const { error } = await supabase.from('scenarios').insert([preparedObj])
     if (error) {
       alert("Cloud Database Insertion Error: " + error.message)
@@ -99,9 +140,9 @@ export default function App() {
     setIsLoading(false)
   }
 
+  // 6. Cloud Mutation Engine: Safe Put Update Handler for Scenarios Dialogues
   const handleEditScenario = async (idToEdit, updatedObj) => {
     setIsLoading(true)
-    
     const preparedObj = {
       ...updatedObj,
       onCallAnalysis: Array.isArray(updatedObj.onCallAnalysis) 
@@ -111,7 +152,6 @@ export default function App() {
         ? updatedObj.importantNotesAndActions.join('\n')
         : (updatedObj.importantNotesAndActions || '')
     }
-
     const { error } = await supabase.from('scenarios').update(preparedObj).eq('id', idToEdit)
     if (error) {
       alert("Cloud Database Modification Fault: " + error.message)
@@ -122,6 +162,7 @@ export default function App() {
     setIsLoading(false)
   }
 
+  // 7. Cloud Mutation Engine: Safe Absolute Row Eraser for Scenarios
   const handleDeleteScenario = async (idToDelete) => {
     if (window.confirm("Are you sure you want to permanently delete this dialogue module from the active database pool?")) {
       setIsLoading(true)
@@ -136,31 +177,80 @@ export default function App() {
     }
   }
 
-  const handleAddNewPhone = (newStr) => {
-    const updated = [...insurancePh, newStr].sort((a, b) => a.localeCompare(b))
-    setInsurancePh(updated)
-    localStorage.setItem('ar_insurance_ph', JSON.stringify(updated))
+  // 8. Cloud Mutation Engine: Handles Inserting New Records for Insurance Directory ('INS PH#')
+  const handleAddNewPhone = async (payer, phone) => {
+    setIsLoading(true)
+    const { error } = await supabase.from('insurance_directory').insert([{ payer_name: payer.toUpperCase(), phone_number: phone }])
+    if (error) {
+      alert("Cloud Database Directory Error: " + error.message)
+    } else {
+      alert("📞 New Insurance record successfully pushed to the Cloud Ledger!")
+      await loadCloudInsurancePhones()
+    }
+    setIsLoading(false)
   }
 
-  const handleAddNewTfl = (newObj) => {
-    const updated = [...tflRules, newObj].sort((a, b) => a.insurance.localeCompare(b.insurance))
-    setTflRules(updated)
-    localStorage.setItem('ar_tfl_rules', JSON.stringify(updated))
+  // 9. Cloud Mutation Engine: Handles Deleting Existing Row Entry vector for Insurance Directory
+  const handleDeletePhone = async (idToDelete) => {
+    if (window.confirm("Delete this insurance directory phone listing permanently?")) {
+      setIsLoading(true)
+      const { error } = await supabase.from('insurance_directory').delete().eq('id', idToDelete)
+      if (error) {
+        alert("Database Erasure Fault: " + error.message)
+      } else {
+        await loadCloudInsurancePhones()
+      }
+      setIsLoading(false)
+    }
   }
 
-  const handleUpdateStaticText = (key, title, body) => {
-    const updated = { ...contentData, [key]: { title, body } }
-    setContentData(updated)
-    localStorage.setItem('ar_content_data', JSON.stringify(updated))
+  // 10. Cloud Mutation Engine: Handles Appending Dynamic New Timely Filing Threshold Rule Entries ('TFL')
+  const handleAddNewTfl = async (insurance, limit) => {
+    setIsLoading(true)
+    const { error } = await supabase.from('tfl_rules').insert([{ insurance_name: insurance, tfl_limit: limit }])
+    if (error) {
+      alert("Cloud Database TFL Engine Fault: " + error.message)
+    } else {
+      alert("🎯 New Timely Filing limit parameters published cleanly to remote layers!")
+      await loadCloudTflRules()
+    }
+    setIsLoading(false)
   }
 
-  // 1. ISOLATED GATEWAY ROUTE: If not logged in, render ONLY the full-screen split layout
+  // 11. Cloud Mutation Engine: Handles Deleting Existing TFL Rule Row Entry Vector from Matrix
+  const handleDeleteTfl = async (idToDelete) => {
+    if (window.confirm("Delete this TFL rule vector permanently from cloud clusters?")) {
+      setIsLoading(true)
+      const { error } = await supabase.from('tfl_rules').delete().eq('id', idToDelete)
+      if (error) {
+        alert("Database TFL Erasure Fault: " + error.message)
+      } else {
+        await loadCloudTflRules()
+      }
+      setIsLoading(false)
+    }
+  }
+
+  // 12. Cloud Mutation Engine: Upserts Static Knowledge Content Guides Framework ('AR ▾' & 'RCM STEPS')
+  const handleUpdateStaticText = async (key, title, body) => {
+    setIsLoading(true)
+    const { error } = await supabase.from('static_pages').upsert({ id: key, title: title, body: body })
+    if (error) {
+      alert("Cloud Database Knowledge Base Sync Error: " + error.message)
+    } else {
+      alert("🛡️ Administrative Update Saved securely inside Supabase Static Page Matrix!")
+      await loadCloudStaticPages()
+    }
+    setIsLoading(false)
+  }
+
+  // 13. SECURE ROUTE ROUTING GATEWAY
   if (!currentUser) {
     return (
       <LoginGateway 
         onLoginSuccess={(userObj) => {
-          setCurrentUser(userObj);
-          sessionStorage.setItem('ar_active_user', JSON.stringify(userObj));
+          setCurrentUser(userObj)
+          sessionStorage.setItem('ar_active_user', JSON.stringify(userObj))
         }} 
         darkMode={darkMode} 
         setDarkMode={setDarkMode} 
@@ -168,7 +258,6 @@ export default function App() {
     )
   }
 
-  // 2. ISOLATED RUNTIME ENGINE SCREEN: Prevents header overlap collisions while database loads
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center font-mono text-xs bg-zinc-950 text-emerald-400 tracking-widest uppercase">
@@ -176,7 +265,7 @@ export default function App() {
       </div>
     )
   }
-  // 3. MAIN DASHBOARD VIEWPORT INTERFACE (Rendered post successful authorization)
+  // 14. MAIN DASHBOARD VIEWPORT INTERFACE (Rendered post successful authorization)
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
       
@@ -250,7 +339,7 @@ export default function App() {
                     const company = prompt("Enter Insurance Company Name:")
                     const numbers = prompt("Enter Contact Phone Number(s):")
                     if (company && numbers) {
-                      handleAddNewPhone(`${company.toUpperCase()} : ${numbers}`)
+                      handleAddNewPhone(company, numbers)
                     }
                   }}
                   className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider"
@@ -275,9 +364,21 @@ export default function App() {
               </button>
             )}
 
-            <div className="p-4 border border-gray-400/30 rounded bg-gray-500/5 font-mono text-sm leading-loose whitespace-pre-wrap space-y-1">
-              {insurancePh.map((record, index) => (
-                <div key={index} className="border-b border-gray-400/10 last:border-0 pb-1 pt-1">{record}</div>
+            <div className="p-4 border border-gray-400/30 rounded bg-gray-500/5 font-mono text-sm leading-loose whitespace-pre-wrap space-y-1 max-h-[60vh] overflow-y-auto">
+              {insurancePh.map((record) => (
+                <div key={record.id} className="border-b border-gray-400/10 last:border-0 pb-2 pt-2 flex justify-between items-center group">
+                  <div className="tracking-wide">
+                    <span className="font-bold text-emerald-500">{record.payer_name}</span> : <span className="font-bold">{record.phone_number}</span>
+                  </div>
+                  {currentUser.role === 'admin' && (
+                    <button 
+                      onClick={() => handleDeletePhone(record.id)}
+                      className="text-[10px] bg-red-600 hover:bg-red-700 text-white px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ❌ Delete
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -296,7 +397,7 @@ export default function App() {
                     const insName = prompt("Enter Insurance Plan Name:")
                     const tflLimit = prompt("Enter Timely Filing Limit Window (e.g., 90 days):")
                     if (insName && tflLimit) {
-                      handleAddNewTfl({ insurance: insName, limit: tflLimit })
+                      handleAddNewTfl(insName, tflLimit)
                     }
                   }}
                   className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider"
@@ -321,19 +422,30 @@ export default function App() {
               </button>
             )}
 
-            <div className="overflow-x-auto border border-gray-400/30 rounded">
+            <div className="overflow-x-auto border border-gray-400/30 rounded max-h-[60vh] overflow-y-auto">
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr className={`border-b border-gray-400/30 ${darkMode ? 'bg-zinc-900 text-white' : 'bg-gray-100 text-black'} font-bold uppercase text-xs tracking-wider`}>
+                  <tr className={`border-b border-gray-400/30 sticky top-0 ${darkMode ? 'bg-zinc-900 text-white' : 'bg-gray-100 text-black'} font-bold uppercase text-xs tracking-wider z-10`}>
                     <th className="p-3">Insurance Name</th>
-                    <th className="p-3 w-1/3">TFL</th>
+                    <th className="p-3">TFL Threshold Limit</th>
+                    {currentUser.role === 'admin' && <th className="p-3 text-center w-24">Actions</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-400/20">
-                  {tflRules.map((rule, idx) => (
-                    <tr key={idx} className="hover:bg-gray-500/5 transition-colors">
-                      <td className="p-3 font-semibold">{rule.insurance}</td>
-                      <td className="p-3 font-mono">{rule.limit}</td>
+                  {tflRules.map((rule) => (
+                    <tr key={rule.id} className="hover:bg-gray-500/5 transition-colors">
+                      <td className="p-3 font-semibold text-emerald-500">{rule.insurance_name}</td>
+                      <td className="p-3 font-mono font-bold">{rule.tfl_limit}</td>
+                      {currentUser.role === 'admin' && (
+                        <td className="p-3 text-center">
+                          <button 
+                            onClick={() => handleDeleteTfl(rule.id)}
+                            className="text-[10px] bg-red-600 hover:bg-red-700 text-white px-2 py-0.5 rounded"
+                          >
+                            ❌ Delete
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
