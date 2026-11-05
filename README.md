@@ -16,10 +16,10 @@ Every single shift, I faced the intense heat of complex rejections across specia
 Back then, sitting on the floor under that pressure, I made a personal commitment:  
 *I decided to master every single denial pattern, decode every payer objection, and eventually build a systematic solution so intuitive that any beginner could step onto the floor with standard training and deliver clean, efficient production from Day 1.*
 
-### 🚀 The Solution: Converting Floor Experience into Interactive Calling Trees
-I took that hard-earned domain knowledge and engineered **AR Caller Pro**. 
+### 🚀 The Crucial Pain Point & Evolution: Breaking the Rigid Format
+Initially, the platform faced a massive operational ceiling: **The system was locked into rigid text formatting and pre-defined array strings.** Every time a complex new branching scenario, an insurance update, or a multi-layered flowchart tree needed to be added, it required manual file modifications, tedious array mapping, and continuous redeployments via GitHub. This limited the platform's agility and created a severe administrative bottleneck on the active operations floor.
 
-Instead of reading static, boring PDF manuals, this platform equips callers with **dynamic interactive calling trees**, instant denial resolution paths, and real-time call note generators. It protects the candidate-company relationship from Day 1 by removing fear, preventing early burnout, and turning fresh trainees into confident floor producers immediately.
+To permanently smash this bottleneck, I engineered an advanced **RAW HTML Code Setup Editor & Real-Time Sync Engine** within the Admin Access controls. This transition shifted the architecture from static strings to dynamic runtime injection, unlocking unlimited design freedom and resolving the platform's ultimate operational constraint.
 
 ---
 
@@ -38,6 +38,8 @@ Instead of reading static, boring PDF manuals, this platform equips callers with
 
 ## ⚡ Core Operational Capabilities
 
+* **RAW HTML Code Setup Editor:** Gives administrators absolute power to code completely customizable calling trees, multi-column choice matrices, and colored workflow grids directly within the browser interface.
+* **Instant Live Preview Tab Sandbox:** Features an in-flight visual rendering stage that isolates code compiling, allowing admins to test, preview, and perfect complex HTML/Inline CSS blocks before updating the live database environment.
 * **Interactive Denial Calling Trees:** Dynamic branching scripts covering major CARC/RARC codes—guiding callers through exact verification questions and counter-arguments for payer reps.
 * **20-Field Automated Scratchpad:** In-flight call note generation that formats clean, audit-ready PMS/EMR billing notes ready to paste directly into practice management systems.
 * **Timely Filing Limit (TFL) Auditing Engine:** Built-in matrix calculating payer-specific filing limits to flag high-risk aging buckets before accounts expire into uncollectible write-offs.
@@ -58,17 +60,17 @@ Ar-Caller-Pro/
 │   └── images/                 # Image asset paths
 ├── src/
 │   ├── data/
-│   │   ├── scenarios.json      # DB 1: Data storage for calling scenarios
+│   │   ├── scenarios.json      # DB 1: Fallback storage for calling scenarios
 │   │   ├── insuranceDb.json    # DB 2: Test records & payer guidelines
 │   │   ├── tflRules.json       # DB 3: Clear column timely filing matrices
 │   │   └── contentData.json    # DB 4: Content structures & call scripts
 │   ├── components/
 │   │   ├── Header.jsx          # Top bar navbar + theme controller
 │   │   ├── LoginGateway.jsx    # Single-gateway entry & credential modal
-│   │   ├── WorkspaceView.jsx   # Handles conditional workstation rendering
+│   │   ├── WorkspaceView.jsx   # Handles conditional workstation rendering (HTML Editor/Preview Integrated)
 │   │   ├── FormMatrix.jsx      # Note template ingestion panel
 │   │   ├── Scratchpad.jsx      # Live editable account scratchpad
-│   │   ├── InfoContainer.jsx   # Dynamic rich text domain viewer
+│   │   ├── InfoContainer.jsx   # Dynamic rich text domain viewer (Static Page HTML Tabs Integrated)
 │   │   └── Footer.jsx          # Universal footer
 │   ├── supabaseClient.js       # Cloud BaaS interface: Auth & live remote data sync
 │   ├── App.jsx                 # Application core state highway
@@ -81,13 +83,18 @@ Ar-Caller-Pro/
 │   └── vite.config.js          # Primary compilation engine
 ```
 
+---
+
 ## ⚙️ Advanced Engineering Highlights
 
+* **The Ultimate HTML & CSS Learning Sandbox:** By integrating the code portal directly with live rendering states, the admin panel acts as an immediate playground for learning advanced frontend engineering. Users can write raw tags, manage structural tables, execute inline styling configurations, and observe real-time browser behaviors instantly.
+* **Dynamic Content Injection Framework:** Refactored the core visualization layers to utilize safe `dangerouslySetInnerHTML` bypass rendering models. This ensures that every complex table layout, custom nested list, and color-coded hierarchy coded by the admin updates seamlessly across both the Student and Analyst dashboards.
 * **Global Event State Orchestration:** Utilizes native React state hooks inside a unified root core hub (`App.jsx`) to manage real-time tracking variables across deeply nested child components without prop-drilling vulnerabilities.
+* **Supabase Cloud State Synchronization:** Integrates a reactive cloud communication layer utilizing remote database transactions (`.upsert()`, `.select()`). It ensures all newly generated HTML templates, telephone logs, and operational guidelines are fetched instantly and remain persisted cleanly across window lifecycles.
 * **Separation of Concerns:** Business mapping logic, database mutations, and input parameters data cleaning (`.trim()`, `.toUpperCase()`, `.sort()`) are fully isolated away from presentation components inside static configuration files.
 * **Controlled Modifiers:** Features precise implementation of two-way state binding across an automated, 20-field data entry matrix to allow operator notes to compile dynamically onto interactive browser scratchpads.
-* **Data Persistence Engine:** Built-in integration with `localStorage` lifecycle methods ensures that custom data configurations, newly injected telephone logs, and TFL changes are preserved natively in the client cache across window refreshes.
-* **Dynamic Content Management:** Complete with custom, administrative authentication gates enabling the site administrator to execute dynamic data downloads to update core layout JSON databases cleanly.
+
+---
 
 ## 🎨 Design System Variables
 
@@ -105,4 +112,3 @@ The application workspace utilizes high-contrast accessibility tokens driven dyn
 **Accounts Receivable Analyst & RCM Specialist • Full-Stack Web Developer**
 
 > Transforming US Healthcare Operational Friction into High-Velocity Web Automation.
-
