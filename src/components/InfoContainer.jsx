@@ -15,11 +15,15 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
   const [inputPayer, setInputPayer] = useState('')
   const [inputNumber, setInputNumber] = useState('')
 
+  // State for tracking Editor vs Preview mode inside static page administrator window
+  const [infoTabMode, setInfoTabMode] = useState('editor')
+
   // Flexible detection flags that don't care about precise capitalization or underscores
   const normalizedKey = String(tabKey || '').toUpperCase()
   const isInsuranceMatrixView = normalizedKey.includes('PH') || normalizedKey.includes('INS')
   const isTflMatrixView = normalizedKey.includes('TFL')
   const isInteractiveTable = isInsuranceMatrixView || isTflMatrixView
+  
   // Sync state modifications smoothly when moving between tabs
   useEffect(() => {
     setEditTitle(pageData.title)
@@ -27,6 +31,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     setIsEditing(false)
     setShowAddForm(false)
     setEditingRecordIndex(null)
+    setInfoTabMode('editor') // Reset back to default writer engine
 
     // Parse data dynamically if viewing either an Insurance or TFL table
     if (isInteractiveTable && pageData.body) {
@@ -109,7 +114,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
   const actionButtonText = isInsuranceMatrixView ? '➕ Add New Ins Phone Number' : '➕ Add New TFL Rule'
   const formHeaderLabel = isInsuranceMatrixView ? 'Insurance Phone Record' : 'Timely Filing Rule'
 
-    return (
+  return (
     <div className="space-y-6">
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
@@ -134,7 +139,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
               </button>
             ) : (
               <button
-                onClick={() => setIsEditing(true)}
+                onClick={() => { setIsEditing(true); setInfoTabMode('editor'); }}
                 className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider"
               >
                 ✏️ Edit Page Text
@@ -233,9 +238,29 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
           </table>
         </div>
       ) : isEditing ? (
-        /* Protected Administrative Editor Entry Layout Window */
-        <form onSubmit={handleFormSave} className="p-6 border border-gray-400/30 rounded bg-gray-500/5 space-y-4 max-w-3xl">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-500">🛡️ Admin Access: Edit Knowledge Content Frame</h3>
+        /* Protected Administrative Editor Entry Layout Window with RAW HTML Editor and Live Preview Tabs */
+        <form onSubmit={handleFormSave} className="p-6 border border-gray-400/30 rounded bg-gray-500/5 space-y-4 max-w-3xl mx-auto shadow-2xl">
+          <div className="flex justify-between items-center pb-2 border-b border-gray-400/20">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-500">🛡️ Admin Access: Edit Knowledge Content Frame</h3>
+            
+            {/* TAB SELECTION LAYOUT RIG */}
+            <div className="flex border border-gray-400/40 rounded overflow-hidden text-xs font-bold shadow-sm">
+              <button 
+                type="button" 
+                onClick={() => setInfoTabMode('editor')} 
+                className={`px-4 py-1.5 transition-colors ${infoTabMode === 'editor' ? 'bg-emerald-500 text-white' : 'bg-gray-500/10 hover:bg-gray-500/20'}`}
+              >
+                🖥️ RAW HTML Editor
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setInfoTabMode('preview')} 
+                className={`px-4 py-1.5 transition-colors ${infoTabMode === 'preview' ? 'bg-emerald-500 text-white' : 'bg-gray-500/10 hover:bg-gray-500/20'}`}
+              >
+                👁️ Live Preview Tab
+              </button>
+            </div>
+          </div>
           
           <div className="flex flex-col gap-1">
             <label className="text-xs font-bold uppercase tracking-wider">Page Main Header Title:</label>
@@ -248,18 +273,30 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold uppercase tracking-wider">Page Content Workspace:</label>
-            <textarea
-              rows={12}
-              value={editBody}
-              onChange={(e) => setEditBody(e.target.value)}
-              required
-              className={`p-3 border rounded text-sm outline-none font-mono ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}
-            />
-          </div>
+          {infoTabMode === 'editor' ? (
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold uppercase tracking-wider text-amber-500 tracking-wider">Page Content Workspace (RAW HTML Allowed):</label>
+              <textarea
+                rows={14}
+                value={editBody}
+                onChange={(e) => setEditBody(e.target.value)}
+                required
+                placeholder="<div class='custom-container'><h3>Static Node Flow</h3></div>"
+                className={`p-3 border rounded text-sm outline-none font-mono ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}
+              />
+            </div>
+          ) : (
+            /* REAL-TIME PREVIEW CONTAINER */
+            <div className="p-6 border border-dashed border-gray-400/40 rounded-lg min-h-[300px] max-h-[50vh] overflow-y-auto bg-gray-500/5 shadow-inner">
+              <h4 className="text-xs font-black uppercase tracking-widest text-center text-emerald-500 mb-4">— Static View Live Preview —</h4>
+              <div 
+                className="font-serif text-sm leading-relaxed antialiased"
+                dangerouslySetInnerHTML={{ __html: editBody || '<p class="opacity-50 italic text-center text-xs">No RAW HTML setup configured inside the workspace input box yet.</p>' }} 
+              />
+            </div>
+          )}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-2 justify-end">
             <button type="submit" className="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded shadow uppercase tracking-wide">
               🟢 Update Live Page
             </button>
@@ -269,14 +306,14 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
           </div>
         </form>
       ) : (
-        /* Public Read-Only Layout Presentation Frame for Students */
+        /* Public Read-Only Layout Presentation Frame for Students Rendering RAW HTML Code Safely */
         <div className="max-w-4xl mx-auto p-6 font-serif select-none">
           
-          {/* DYNAMIC BRANCHING FORMAT: For perfectly structured flow text */}
+          {/* DYNAMIC BRANCHING FORMAT */}
           {pageData.topStem ? (
             <div className="flex flex-col items-center w-full">
               
-              {/* 1. TOP STEM: Single line sequence with dynamic arrow layers */}
+              {/* 1. TOP STEM */}
               <div className="flex flex-col items-center w-full space-y-2 text-sm text-zinc-900 dark:text-zinc-100 antialiased">
                 {pageData.topStem.map((step, idx) => (
                   <React.Fragment key={step.id}>
@@ -290,7 +327,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
                 ))}
               </div>
 
-              {/* 2. SPLIT ARROW BRANCH: Perfectly scaled flowchart directional indicators */}
+              {/* 2. SPLIT ARROW BRANCH */}
               {pageData.branches && (
                 <div className="w-full max-w-2xl flex justify-between items-center text-zinc-500 font-semibold text-lg px-24 my-2">
                   <span>↙</span>
@@ -298,7 +335,7 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
                 </div>
               )}
 
-              {/* 3. PARALLEL TEXT MATRIX: Seamless side by side text logic pathways */}
+              {/* 3. PARALLEL TEXT MATRIX */}
               {pageData.branches && (
                 <div className="grid grid-cols-2 gap-x-12 items-start w-full max-w-3xl text-zinc-900 dark:text-zinc-100 antialiased text-xs">
                   
@@ -342,10 +379,11 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
               )}
             </div>
           ) : (
-            /* OLD FALLBACK FORMAT: Normal pre wrap interface context */
-            <div className="whitespace-pre-wrap leading-relaxed text-sm opacity-90 text-left p-4 font-serif">
-              {pageData.body}
-            </div>
+            /* UPDATED VIEWING COMPONENT FOR STATIC DATA EXECUTION INTERFACE */
+            <div 
+              className="leading-relaxed text-sm opacity-90 text-left p-4 font-serif overflow-x-auto whitespace-normal"
+              dangerouslySetInnerHTML={{ __html: pageData.body }}
+            />
           )}
 
         </div>
@@ -353,4 +391,3 @@ export default function InfoContainer({ tabKey, data, currentUser, onUpdateText,
     </div>
   )
 }
-
