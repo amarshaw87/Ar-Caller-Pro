@@ -26,6 +26,7 @@ export default function App() {
   const [insurancePh, setInsurancePh] = useState(baseInsurancePh.records || baseInsurancePh) 
   const [tflRules, setTflRules] = useState(baseTflRules.rules || baseTflRules)               
   const [contentData, setContentData] = useState(baseContentData)
+
   const loadCloudDatabaseScenarios = async () => {
     setIsLoading(true)
     const { data, error } = await supabase.from('scenarios').select('*')
@@ -73,6 +74,7 @@ export default function App() {
       rootElement.classList.remove('dark')
     }
   }, [darkMode])
+
   const handleAddNewScenario = async (newObj) => {
     setIsLoading(true)
     
@@ -95,7 +97,6 @@ export default function App() {
     }
     setIsLoading(false)
   }
-
   const handleEditScenario = async (idToEdit, updatedObj) => {
     setIsLoading(true)
     
@@ -118,6 +119,7 @@ export default function App() {
     }
     setIsLoading(false)
   }
+
   const handleDeleteScenario = async (idToDelete) => {
     if (window.confirm("Are you sure you want to permanently delete this dialogue module from the active database pool?")) {
       setIsLoading(true)
@@ -150,14 +152,21 @@ export default function App() {
     localStorage.setItem('ar_content_data', JSON.stringify(updated))
   }
 
+  // 1. ISOLATED GATEWAY ROUTE: If not logged in, render ONLY the full-screen split layout
   if (!currentUser) {
     return (
-      <div className={`min-h-screen flex flex-col justify-center items-center transition-colors duration-300 ${darkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
-        <LoginGateway onLoginSuccess={(userObj) => (setCurrentUser(userObj), sessionStorage.setItem('ar_active_user', JSON.stringify(userObj)))} darkMode={darkMode} setDarkMode={setDarkMode} />
-      </div>
+      <LoginGateway 
+        onLoginSuccess={(userObj) => {
+          setCurrentUser(userObj);
+          sessionStorage.setItem('ar_active_user', JSON.stringify(userObj));
+        }} 
+        darkMode={darkMode} 
+        setDarkMode={setDarkMode} 
+      />
     )
   }
 
+  // 2. ISOLATED RUNTIME ENGINE SCREEN: Prevents header overlap collisions while database loads
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center font-mono text-xs bg-zinc-950 text-emerald-400 tracking-widest uppercase">
@@ -165,6 +174,7 @@ export default function App() {
       </div>
     )
   }
+  // 3. MAIN DASHBOARD VIEWPORT INTERFACE (Rendered post successful authorization)
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
       
@@ -177,7 +187,11 @@ export default function App() {
           setActiveScenarioKey(''); 
         }} 
         currentUser={currentUser}
-        onLogout={() => (setCurrentUser(null), setCurrentTab('HOME'), sessionStorage.removeItem('ar_active_user'))}
+        onLogout={() => {
+          setCurrentUser(null);
+          setCurrentTab('HOME');
+          sessionStorage.removeItem('ar_active_user');
+        }}
       />
 
       <main className="max-w-6xl w-full mx-auto p-4 md:p-6 flex-grow">
@@ -328,7 +342,7 @@ export default function App() {
 
       </main>
 
-      <Footer />
+      <Footer darkMode={darkMode} />
 
     </div>
   )
