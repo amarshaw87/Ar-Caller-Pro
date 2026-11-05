@@ -1,207 +1,322 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
-export default function LoginGateway({ onLoginSuccess, darkMode, setDarkMode }) {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
+export default function InfoContainer({ tabKey, data, currentUser, onUpdateText, darkMode }) {
+  const pageData = data[tabKey] || { title: 'Information Page', body: 'No data content available.' }
+  const [isEditing, setIsEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState(pageData.title)
+  const [editBody, setEditBody] = useState(pageData.body)
 
-  const handleAuthSubmit = (e) => {
-    e.preventDefault()
-    setErrorMessage('')
+  // Table management states for data records
+  const [phoneRecords, setPhoneRecords] = useState([])
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [editingRecordIndex, setEditingRecordIndex] = useState(null)
 
-    const cleanUser = username.trim()
-    const cleanPass = password.trim()
+  // Mutation form input parameters
+  const [inputPayer, setInputPayer] = useState('')
+  const [inputNumber, setInputNumber] = useState('')
 
-    // 🔐 ADMIN ACCESS CREDENTIALS GATE
-    if (cleanPass === 'AmarShaw_Admin_Pro') {
-      onLoginSuccess({
-        username: cleanUser || 'Amar Shaw (Admin)',
-        role: 'admin'
-      })
-      return
+  // State for tracking Editor vs Preview mode inside static page administrator window
+  const [infoTabMode, setInfoTabMode] = useState('editor')
+
+  // Flexible detection flags that don't care about precise capitalization or underscores
+  const normalizedKey = String(tabKey || '').toUpperCase()
+  const isInsuranceMatrixView = normalizedKey.includes('PH') || normalizedKey.includes('INS')
+  const isTflMatrixView = normalizedKey.includes('TFL')
+  const isInteractiveTable = isInsuranceMatrixView || isTflMatrixView
+  
+  // Sync state modifications smoothly when moving between tabs
+  useEffect(() => {
+    setEditTitle(pageData.title)
+    setEditBody(pageData.body)
+    setIsEditing(false)
+    setShowAddForm(false)
+    setEditingRecordIndex(null)
+    setInfoTabMode('editor')
+
+    // Parse data dynamically if viewing either an Insurance or TFL table
+    if (isInteractiveTable && pageData.body) {
+      try {
+        const records = pageData.body.split('\n').filter(l => l.trim()).map(line => {
+          let splitIndex = line.indexOf(':')
+          let delimiter = ':'
+
+          if (splitIndex === -1) {
+            const spaceMatch = line.match(/\s{2,}/)
+            if (spaceMatch) {
+              splitIndex = spaceMatch.index
+              delimiter = spaceMatch
+            }
+          }
+
+          if (splitIndex !== -1) {
+            return {
+              payer: line.substring(0, splitIndex).trim(),
+              number: line.substring(splitIndex + delimiter.length).trim()
+            }
+          }
+          return { payer: line.trim(), number: 'N/A' }
+        })
+        setPhoneRecords(records)
+      } catch (err) {
+        setPhoneRecords([])
+      }
+    } else {
+      setPhoneRecords([])
     }
+  }, [tabKey, data, isInteractiveTable, pageData.title, pageData.body])
 
-    // 🎓 STUDENT / PUBLIC ACCESS CREDENTIALS GATE
-    if (cleanUser.toLowerCase() === 'student' || cleanPass.toLowerCase() === 'student' || cleanUser !== '') {
-      onLoginSuccess({
-        username: cleanUser || 'Billing Student Trainee',
-        role: 'user'
-      })
-      return
-    }
-
-    setErrorMessage('Invalid authentication parameters. Please enter a valid name or credentials.')
+  // Serializes table actions back to the raw string format with correct dividers
+  const saveRecordsToDatabase = (updatedRecords) => {
+    const separator = isInsuranceMatrixView ? ' : ' : '                  '
+    const serializedBody = updatedRecords
+      .map(r => `${r.payer}${separator}${r.number}`)
+      .join('\n')
+    onUpdateText(tabKey, pageData.title, serializedBody)
   }
 
+  const handleAddSubmit = (e) => {
+    e.preventDefault()
+    if (!inputPayer.trim() || !inputNumber.trim()) return
+
+    const newRecord = { payer: inputPayer.trim(), number: inputNumber.trim() }
+    let updated = []
+
+    if (editingRecordIndex !== null) {
+      updated = [...phoneRecords]
+      updated[editingRecordIndex] = newRecord
+    } else {
+      updated = [...phoneRecords, newRecord]
+    }
+
+    setPhoneRecords(updated)
+    saveRecordsToDatabase(updated)
+
+    setInputPayer('')
+    setInputNumber('')
+    setShowAddForm(false)
+    setEditingRecordIndex(null)
+  }
+
+  const handleDeleteRecord = (indexToDelete) => {
+    const updated = phoneRecords.filter((_, idx) => idx !== indexToDelete)
+    setPhoneRecords(updated)
+    saveRecordsToDatabase(updated)
+  }
+
+  const handleFormSave = (e) => {
+    e.preventDefault()
+    onUpdateText(tabKey, editTitle, editBody)
+    setIsEditing(false)
+  }
+
+  const columnLeftName = isInsuranceMatrixView ? 'Insurance Company Payer' : 'Insurance Name'
+  const columnRightName = isInsuranceMatrixView ? 'Primary Directory Phone Number' : 'TFL Threshold Limit'
+  const actionButtonText = isInsuranceMatrixView ? '➕ Add New Ins Phone Number' : '➕ Add New TFL Rule'
+  const formHeaderLabel = isInsuranceMatrixView ? 'Insurance Phone Record' : 'Timely Filing Rule'
+
   return (
-    // STRICT 50/50 GRID FRAMEWORK FOR PERFECT BALANCED EQUAL SPLIT
-    <div className={`w-full min-h-screen grid grid-cols-1 lg:grid-cols-2 font-sans transition-colors duration-300 ${darkMode ? 'bg-zinc-950 text-white' : 'bg-gray-50 text-gray-900'}`}>
+    <div className="space-y-6">
       
-      {/* ================= LEFT SIDE: SECURE SIGN-IN FORM (PERFECTLY CENTERED) ================= */}
-      <div className={`w-full h-full flex flex-col justify-center items-center px-8 sm:px-16 lg:px-20 border-r transition-colors shadow-2xl z-10 ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-200'}`}>
-        <div className="w-full max-w-md space-y-6 py-8">
-          
-          {/* Logo Framework Bar */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-gradient-to-tr from-amber-500 to-emerald-600 rounded-lg flex items-center justify-center text-white font-black text-xl shadow-md select-none">
-                A
-              </div>
-              <span className="text-lg font-black tracking-tight uppercase">AR Caller Pro</span>
-            </div>
-            
-            <button 
-              type="button" 
-              onClick={() => setDarkMode(!darkMode)}
-              className={`text-[10px] font-bold px-2.5 py-1 rounded border uppercase tracking-wider transition-all shadow-sm ${darkMode ? 'border-zinc-700 bg-zinc-800 text-amber-400 hover:bg-zinc-700' : 'border-gray-300 bg-gray-100 text-zinc-700 hover:bg-gray-200'}`}
-            >
-              {darkMode ? '☀️ Light' : '🌙 Dark'}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">{pageData.title}</h1>
+          <p className="text-xs font-semibold text-red-500 mt-1">🔴 If you want to modify any items on the list below, use the administrative action panels.</p>
+        </div>
+        
+        {currentUser?.role === 'admin' && !isEditing && (
+          <div className="flex items-center gap-2">
+            {isInteractiveTable ? (
+              <button
+                onClick={() => {
+                  setEditingRecordIndex(null)
+                  setInputPayer('')
+                  setInputNumber('')
+                  setShowAddForm(!showAddForm)
+                }}
+                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider whitespace-nowrap"
+              >
+                {showAddForm ? '❌ Close Input Form' : actionButtonText}
+              </button>
+            ) : (
+              <button
+                onClick={() => { setIsEditing(true); setInfoTabMode('editor'); }}
+                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider"
+              >
+                ✏️ Edit Page Text
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* UNIVERSAL ADMINISTRATIVE FORM PANEL */}
+      {isInteractiveTable && showAddForm && (
+        <form onSubmit={handleAddSubmit} className="p-4 border border-gray-400/20 rounded bg-gray-500/5 max-w-xl space-y-3">
+          <h4 className="text-xs font-black uppercase text-emerald-500 tracking-wider">
+            {editingRecordIndex !== null ? `✏️ Edit Existing ${formHeaderLabel}` : `➕ Append New ${formHeaderLabel}`}
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input 
+              type="text" 
+              placeholder="Insurance/Carrier Title" 
+              value={inputPayer} 
+              onChange={e => setInputPayer(e.target.value)} 
+              required 
+              className={`p-2 text-xs border rounded outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}
+            />
+            <input 
+              type="text" 
+              placeholder={isInsuranceMatrixView ? 'e.g. 800-555-1212' : 'e.g. 180 days / 1 year'} 
+              value={inputNumber} 
+              onChange={e => setInputNumber(e.target.value)} 
+              required 
+              className={`p-2 text-xs border rounded outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}
+            />
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button type="submit" className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded text-[10px] uppercase tracking-wide">
+              {editingRecordIndex !== null ? 'Update Listing' : 'Publish Row'}
+            </button>
+            <button type="button" onClick={() => setShowAddForm(false)} className="px-4 py-1.5 bg-zinc-500 text-white font-bold rounded text-[10px] uppercase tracking-wide">
+              Cancel
             </button>
           </div>
-
-          {/* Heading Prompt Segment */}
-          <div>
-            <h2 className="text-2xl font-black tracking-tight">Sign In</h2>
-            <p className="text-[11px] font-semibold text-gray-500 dark:text-zinc-400 mt-2 leading-relaxed">
-              Your AR Caller Pro account and login credentials belong only to you. Sharing accounts may violate HIPAA regulations regarding data privacy.
-            </p>
-          </div>
-
-          {/* Interactive Login Input Form */}
-          <form onSubmit={handleAuthSubmit} className="space-y-4">
+        </form>
+      )}
+      {/* INTERACTIVE TABLE GRID CONTAINER */}
+      {isInteractiveTable ? (
+        <div className="w-full overflow-x-auto border border-gray-400/20 rounded-lg shadow-sm bg-gray-500/5">
+          <table className={`w-full text-left border-collapse text-xs ${darkMode ? 'text-zinc-300' : 'text-zinc-700'}`}>
+            <thead>
+              <tr className={`border-b border-gray-400/20 font-black uppercase tracking-wider ${darkMode ? 'bg-zinc-900 text-white' : 'bg-gray-100 text-black'}`}>
+                <th className="p-3">{columnLeftName}</th>
+                <th className="p-3">{columnRightName}</th>
+                {currentUser?.role === 'admin' && <th className="p-3 text-center w-24">Actions</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-400/10">
+              {phoneRecords.length > 0 ? (
+                phoneRecords.map((rec, index) => (
+                  <tr key={index} className={`transition-colors ${darkMode ? 'hover:bg-zinc-900/40' : 'hover:bg-gray-50/40'}`}>
+                    <td className="p-3 font-bold text-emerald-500 tracking-wide">{rec.payer}</td>
+                    <td className="p-3 font-mono font-bold tracking-wide">{rec.number}</td>
+                    {currentUser?.role === 'admin' && (
+                      <td className="p-3 flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingRecordIndex(index)
+                            setInputPayer(rec.payer)
+                            setInputNumber(rec.number)
+                            setShowAddForm(true)
+                          }}
+                          className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-[10px]"
+                          title="Edit Row Entry"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteRecord(index)}
+                          className="p-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-[10px]"
+                          title="Delete Row Entry"
+                        >
+                          ❌
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={currentUser?.role === 'admin' ? 3 : 2} className="p-6 text-center italic opacity-50">
+                    No active listings found inside database storage parameters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : isEditing ? (
+        /* Protected Administrative Editor Entry Layout Window with RAW HTML Editor and Live Preview Tabs */
+        <form onSubmit={handleFormSave} className="p-6 border border-gray-400/30 rounded bg-gray-500/5 space-y-4 max-w-3xl mx-auto shadow-2xl">
+          <div className="flex justify-between items-center pb-2 border-b border-gray-400/20">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-500">🛡️ Admin Access: Edit Knowledge Content Frame</h3>
             
-            {errorMessage && (
-              <div className="p-3 text-xs font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded">
-                {errorMessage}
-              </div>
-            )}
-
-            {/* Input 1: User Identity Name */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-black uppercase tracking-wider text-gray-700 dark:text-zinc-300">User Identity Name / ID:</label>
-              <input 
-                type="text" 
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="e.g., student (or leave blank if using Token)"
-                className={`w-full px-3 py-2.5 text-xs border rounded outline-none transition-all font-medium ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white focus:border-emerald-500' : 'bg-gray-50/50 border-gray-300 text-black focus:border-blue-600'}`}
-              />
-            </div>
-
-            {/* Input 2: Access Token / Password Box */}
-            <div className="flex flex-col gap-1.5 relative">
-              <label className="text-[10px] font-black uppercase tracking-wider text-gray-700 dark:text-zinc-300">Access Token / Password:*</label>
-              <div className="relative">
-                <input 
-                  type={showPassword ? 'text' : 'password'} 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="Enter student or your private Admin token"
-                  className={`w-full px-3 py-2.5 text-xs border rounded outline-none transition-all font-mono ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white focus:border-emerald-500' : 'bg-gray-50/50 border-gray-300 text-black focus:border-blue-600'}`}
-                />
-                <button 
-                  type="button" 
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm opacity-50 hover:opacity-100 outline-none select-none"
-                >
-                  {showPassword ? '🔒' : '👁️'}
-                </button>
-              </div>
-            </div>
-
-            {/* Trigger Button */}
-            <div className="pt-2">
+            {/* TAB SELECTION LAYOUT RIG */}
+            <div className="flex border border-gray-400/40 rounded overflow-hidden text-xs font-bold shadow-sm">
               <button 
-                type="submit"
-                className={`w-full py-3 font-black rounded text-xs transition-colors shadow-md tracking-widest uppercase ${darkMode ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                type="button" 
+                onClick={() => setInfoTabMode('editor')} 
+                className={`px-4 py-1.5 transition-colors ${infoTabMode === 'editor' ? 'bg-emerald-500 text-white' : 'bg-gray-500/10 hover:bg-gray-500/20'}`}
               >
-                Authenticate Profile Access
+                🖥️ RAW HTML Editor
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setInfoTabMode('preview')} 
+                className={`px-4 py-1.5 transition-colors ${infoTabMode === 'preview' ? 'bg-emerald-500 text-white' : 'bg-gray-500/10 hover:bg-gray-500/20'}`}
+              >
+                👁️ Live Preview Tab
               </button>
             </div>
-
-          </form>
-
-          {/* Verification Helper Links */}
-          <div className="flex items-center justify-between text-[11px] font-bold border-t border-gray-400/10 pt-4">
-            <button type="button" onClick={() => { setUsername('student'); setPassword('student'); }} className="text-blue-600 dark:text-emerald-400 hover:underline">Forgot your user ID?</button>
-            <button type="button" onClick={() => { setUsername('student'); setPassword('student'); }} className="text-blue-600 dark:text-emerald-400 hover:underline">Forgot your password?</button>
           </div>
-
-          <div className="pt-2 border-t border-gray-400/10 opacity-60 text-[10px] text-center leading-relaxed">
-            Students type <span className="font-semibold underline">student</span> into fields to explore. Administrative data injection access forms require secure token hashing protocols.
-          </div>
-
-        </div>
-      </div>
-      {/* ================= RIGHT SIDE: OPERATIONAL ROI & INFO (PERFECTLY CENTERED) ================= */}
-      <div className={`hidden lg:flex h-full flex-col justify-center items-center px-16 xl:px-24 relative overflow-hidden transition-colors ${darkMode ? 'bg-zinc-950' : 'bg-gradient-to-br from-slate-50 via-slate-100 to-zinc-200'}`}>
-        
-        {/* Abstract graphic ambient meshes for high-end web layout look */}
-        <div className={`absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl opacity-30 ${darkMode ? 'bg-emerald-500/5' : 'bg-emerald-500/10'}`}></div>
-        <div className={`absolute -bottom-40 left-10 w-96 h-96 rounded-full blur-3xl opacity-30 ${darkMode ? 'bg-blue-500/5' : 'bg-blue-500/10'}`}></div>
-
-        <div className="w-full max-w-md space-y-8 relative z-10 py-8">
           
-          <div className="space-y-3">
-            <h3 className="text-2xl font-black tracking-tight">New to AR Caller Pro?</h3>
-            <p className="text-xs font-semibold text-gray-600 dark:text-zinc-400 leading-relaxed">
-              Discover a high-performance web workspace designed to transform US Healthcare Revenue Cycle Management operational business rules into interactive visual learning models.
-            </p>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-bold uppercase tracking-wider">Page Main Header Title:</label>
+            <input
+              type="text"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              required
+              className={`p-2 border rounded text-sm outline-none ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}
+            />
           </div>
 
-          {/* Capability Matrix Parameters Grid - Highly Optimized for Freshers & Beginners Positive Experience */}
-          <ul className="space-y-5 text-xs font-semibold text-gray-700 dark:text-zinc-300">
-            
-            <li className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500 text-emerald-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">✔</span>
-              <div className="leading-relaxed">
-                <strong className="text-gray-900 dark:text-white block text-sm font-bold mb-0.5 text-emerald-500">🚀 Zero Phone Anxiety, 100% Confidence!</strong>
-                Ab US insurance agents se baat karte waqt darna nahi hai! Hamare step-by-step interactive navigation guides aapko floor par baithte hi ek expert caller bana denge.
-              </div>
-            </li>
+          {infoTabMode === 'editor' ? (
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold uppercase tracking-wider text-amber-500">Page Content Workspace (RAW HTML Allowed):</label>
+              <textarea
+                rows={14}
+                value={editBody}
+                onChange={(e) => setEditBody(e.target.value)}
+                required
+                placeholder="<div class='custom-container'><h3>Static Node Flow</h3></div>"
+                className={`p-3 border rounded text-sm outline-none font-mono ${darkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-gray-300 text-black'}`}
+              />
+            </div>
+          ) : (
+            /* REAL-TIME PREVIEW CONTAINER */
+            <div className="p-6 border border-dashed border-gray-400/40 rounded-lg min-h-[300px] max-h-[50vh] overflow-y-auto bg-gray-500/5 shadow-inner">
+              <h4 className="text-xs font-black uppercase tracking-widest text-center text-emerald-500 mb-4">— Static View Live Preview —</h4>
+              <div 
+                className="font-serif text-sm leading-relaxed antialiased"
+                dangerouslySetInnerHTML={{ __html: editBody || '<p class="opacity-50 italic text-center text-xs">No RAW HTML setup configured inside the workspace input box yet.</p>' }} 
+              />
+            </div>
+          )}
 
-            <li className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500 text-emerald-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">✔</span>
-              <div className="leading-relaxed">
-                <strong className="text-gray-900 dark:text-white block text-sm font-bold mb-0.5 text-emerald-500">✍️ Auto-Pilot Call Notes Generator</strong>
-                Mushkil aur lambe billing notes manually type karne ka jhanjhat khatam. Bas simple inputs fill kijiye aur aur audit-ready notes turant copy kijiye.
-              </div>
-            </li>
-
-            <li className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500 text-emerald-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">✔</span>
-              <div className="leading-relaxed">
-                <strong className="text-gray-900 dark:text-white block text-sm font-bold mb-0.5 text-emerald-500">🎯 Super Easy Flowchart Matrix</strong>
-                Boring PDF manuals ya moti training books padhne ki bilkul zaroorat nahi hai. Saare claim denial rules ko ekdum saaf aur simple maps me dekhiye.
-              </div>
-            </li>
-
-            <li className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500 text-emerald-600 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">✔</span>
-              <div className="leading-relaxed">
-                <strong className="text-gray-900 dark:text-white block text-sm font-bold mb-0.5 text-emerald-500">🛡️ Fast Onboarding & Day-1 Ready</strong>
-                Yeh platform aapko bina kisi pressure ke, bohot hi aasan tarike se RCM hacks sikhata hai, taaki aap floor par pehle din se hi rock kar sakein!
-              </div>
-            </li>
-
-          </ul>
-
-          {/* Quick-Bypass Action Button for Student Testing Mode */}
-          <div className="pt-2">
-            <button 
-              type="button"
-              onClick={() => onLoginSuccess({ username: 'Billing Student Trainee', role: 'user' })}
-              className={`px-5 py-2.5 border text-[10px] font-black uppercase tracking-widest rounded transition-all shadow-sm ${darkMode ? 'border-zinc-700 hover:bg-white hover:text-black bg-zinc-900' : 'border-gray-400 hover:bg-gray-900 hover:text-white hover:border-gray-900 bg-transparent'}`}
-            >
-              Explore Student Mode
+          <div className="flex gap-3 pt-2 justify-end">
+            <button type="submit" className="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded shadow uppercase tracking-wide">
+              🟢 Update Live Page
+            </button>
+            <button type="button" onClick={() => setIsEditing(false)} className="px-5 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded shadow uppercase tracking-wide">
+              Cancel
             </button>
           </div>
+        </form>
+      ) : (
+        /* Public Read-Only Layout Presentation Frame Rendering RAW HTML Safely */
+        <div className="max-w-4xl mx-auto p-4 md:p-6 font-serif select-none">
+          
+          {/* UPDATED COMPONENT FOR STATIC DATA EXECUTION INTERFACE */}
+          <div 
+            className="leading-relaxed text-sm opacity-90 text-left whitespace-normal font-sans"
+            dangerouslySetInnerHTML={{ __html: typeof pageData.body === 'string' ? pageData.body : (pageData.body?.text || JSON.stringify(pageData.body)) }}
+          />
 
         </div>
-      </div>
-
+      )}
     </div>
   )
 }
