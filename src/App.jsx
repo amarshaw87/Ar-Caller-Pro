@@ -28,7 +28,9 @@ export default function App() {
   const [contentData, setContentData] = useState(baseContentData)
 
   const loadCloudDatabaseScenarios = async () => {
-    setIsLoading(true)
+    // SILENT RENDERING FIX: Commented out to prevent the full-screen terminal loading screen from flashing on tab changes
+    // setIsLoading(true)
+    
     const { data, error } = await supabase.from('scenarios').select('*')
     
     if (!error && data && data.length > 0) {
@@ -63,7 +65,6 @@ export default function App() {
       setIsLoading(false)
     }
   }, [currentTab, currentUser])
-
   useEffect(() => {
     const rootElement = document.documentElement
     if (darkMode) {
@@ -97,6 +98,7 @@ export default function App() {
     }
     setIsLoading(false)
   }
+
   const handleEditScenario = async (idToEdit, updatedObj) => {
     setIsLoading(true)
     
