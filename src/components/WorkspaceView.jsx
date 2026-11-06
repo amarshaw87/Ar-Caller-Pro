@@ -14,7 +14,7 @@ export default function WorkspaceView({
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
 
-  // Form Field State Vectors
+  // Administrative State Parameters
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState(currentTab)
   const [flowchartHtml, setFlowchartHtml] = useState('')
@@ -25,7 +25,7 @@ export default function WorkspaceView({
     setEditingId(scenarioItem.id)
     setTitle(scenarioItem.title)
     setCategory(scenarioItem.category)
-    setFlowchartHtml(scenarioItem.flowchart_html || scenarioItem.flowchartHtml || '')
+    setFlowchartHtml(scenarioItem.body || scenarioItem.flowchart_html || scenarioItem.flowchartHtml || '')
     setShowAddForm(true)
   }
 
@@ -34,6 +34,7 @@ export default function WorkspaceView({
     const payload = { 
       title, 
       category, 
+      body: flowchartHtml, // Map directly to Supabase base layout core "body" column
       flowchart_html: flowchartHtml,
       flowchartHtml: flowchartHtml 
     }
@@ -52,7 +53,7 @@ export default function WorkspaceView({
     setFlowchartHtml('')
   }
 
-  // Filter keys matching active dashboard context routing
+  // Filter keys relative to current active viewport navigation channels
   const activeCategory = currentTab === 'DENIALS' ? 'DENIALS' : 'AR SCENARIO'
   const scenarioKeysList = Object.keys(scenarios).filter(
     (key) => scenarios[key].category === activeCategory
@@ -61,7 +62,7 @@ export default function WorkspaceView({
   return (
     <div className="space-y-6">
       
-      {/* ==================== SCENARIO MATRIX HEADER CONTROL ==================== */}
+      {/* ==================== WORKSPACE CONTROL HEADER ==================== */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
         <div>
           <h1 className="text-xl font-black uppercase tracking-tight">
@@ -211,11 +212,11 @@ export default function WorkspaceView({
               </div>
             </div>
 
-            {/* DYNAMIC RAW HTML COMPILER INJECTION MATRIX */}
+            {/* DYNAMIC THREE-WAY AUTO-RECOVERY COMPILER INJECTION CANVAS */}
             <div
               className="w-full overflow-x-auto rounded-lg bg-transparent"
               dangerouslySetInnerHTML={{
-                __html: activeScenario.flowchart_html || activeScenario.flowchartHtml || activeScenario.body || ''
+                __html: activeScenario.body || activeScenario.flowchart_html || activeScenario.flowchartHtml || ''
               }}
             />
           </div>
