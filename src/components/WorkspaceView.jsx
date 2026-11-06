@@ -22,6 +22,9 @@ export default function WorkspaceView({
   const [newNotes, setNewNotes] = useState('')
   const [compiledScratchNote, setCompiledScratchNote] = useState('')
 
+  // State for tracking whether Code Editor or Live Preview is active inside the admin modal
+  const [previewActive, setPreviewActive] = useState(false)
+
   const filteredKeys = Object.keys(scenarios || {}).filter(key => scenarios[key]?.category === currentTab)
   
   const hasValidActive = scenarios && scenarios[activeScenarioKey] && scenarios[activeScenarioKey].category === currentTab
@@ -76,6 +79,7 @@ export default function WorkspaceView({
     setEditingId(null)
     setActiveScenarioKey(payload.id)
     setCompiledScratchNote('')
+    setPreviewActive(false) // Reset view back to default
   }
 
   const pageTitleHeader = currentTab === 'AR SCENARIO' 
@@ -93,7 +97,7 @@ export default function WorkspaceView({
         {currentUser?.role === 'admin' && (
           <button 
             onClick={() => {
-              setIsEditing(false); setEditingId(null); setNewTitle(''); setNewAnalysis(''); setNewNotes(''); setShowAddModal(true);
+              setIsEditing(false); setEditingId(null); setNewTitle(''); setNewAnalysis(''); setNewNotes(''); setPreviewActive(false); setShowAddModal(true);
             }}
             className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider whitespace-nowrap"
           >
@@ -145,6 +149,7 @@ export default function WorkspaceView({
                       setNewTitle(scenarios[key]?.title || '')
                       setNewAnalysis(Array.isArray(scenarios[key]?.onCallAnalysis) ? scenarios[key].onCallAnalysis.join('\n') : (scenarios[key]?.onCallAnalysis || ''))
                       setNewNotes(Array.isArray(scenarios[key]?.importantNotesAndActions) ? scenarios[key].importantNotesAndActions.join('\n') : (scenarios[key]?.importantNotesAndActions || ''))
+                      setPreviewActive(false)
                       setShowAddModal(true)
                     }}
                     className="p-1 text-[10px] bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
@@ -161,29 +166,71 @@ export default function WorkspaceView({
       {/* 4. ADMIN MODAL DIALOGUE CREATOR PORTAL POP-UP */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <form onSubmit={handleCreateScenarioSubmit} className={`w-full max-w-2xl p-6 border rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto space-y-4 ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white' : 'bg-white border-gray-200 text-black'}`}>
-            <h2 className="text-base font-bold uppercase tracking-wider text-emerald-500 pb-2 border-b border-gray-400/20">
-              {isEditing ? '✏️ Edit Existing' : '➕ Add New'} {currentTab} Dialogue Module
-            </h2>
+          <form onSubmit={handleCreateScenarioSubmit} className={`w-full max-w-4xl p-6 border rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto space-y-4 ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white' : 'bg-white border-gray-200 text-black'}`}>
+            
+            <div className="flex justify-between items-center pb-2 border-b border-gray-400/20">
+              <h2 className="text-base font-bold uppercase tracking-wider text-emerald-500">
+                {isEditing ? '✏️ Edit Existing' : '➕ Add New'} {currentTab} Dialogue Module
+              </h2>
+              
+              {/* RAW HTML SETUP TAB CONTROLS */}
+              <div className="flex border border-gray-400/40 rounded overflow-hidden text-xs font-bold shadow-sm">
+                <button 
+                  type="button" 
+                  onClick={() => setPreviewActive(false)} 
+                  className={`px-4 py-1.5 transition-colors ${!previewActive ? 'bg-emerald-500 text-white' : 'bg-gray-500/10 hover:bg-gray-500/20'}`}
+                >
+                  🖥️ RAW HTML Editor
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setPreviewActive(true)} 
+                  className={`px-4 py-1.5 transition-colors ${previewActive ? 'bg-emerald-500 text-white' : 'bg-gray-500/10 hover:bg-gray-500/20'}`}
+                >
+                  👁️ Live Preview Tab
+                </button>
+              </div>
+            </div>
             
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold uppercase">Scenario Title / Code Name:*</label>
               <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required placeholder="e.g., Patient Deductible Layout" className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-300'}`} />
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold uppercase">On Call Analysis Guide (Type each step on a new line. Use a single ↓ for arrows, and a ↙ ↘ line where it splits):*</label>
-              <textarea rows={10} value={newAnalysis} onChange={(e) => setNewAnalysis(e.target.value)} required placeholder="Claim applied toward Deductible&#10;↓&#10;May I have the processed date?&#10;↓" className={`p-2 border rounded text-xs outline-none font-mono ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-300'}`} />
-            </div>
+            {/* DYNAMIC TOGGLE BETWEEN RAW HTML BOX AND LIVE RENDER VIEW */}
+            {!previewActive ? (
+              <div className="space-y-4">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold uppercase text-amber-500 tracking-wider">RAW HTML Code Setup for On Call Analysis Guide:*</label>
+                  <textarea 
+                    rows={12} 
+                    value={newAnalysis} 
+                    onChange={(e) => setNewAnalysis(e.target.value)} 
+                    required 
+                    placeholder="<div style='color: green;'><h3>Mera Custom Flow Tree</h3></div>" 
+                    className={`p-2 border rounded text-xs outline-none font-mono ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-300'}`} 
+                  />
+                </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold uppercase">Important Notes & Actions (Type each rule on a new line):*</label>
-              <textarea rows={6} value={newNotes} onChange={(e) => setNewNotes(e.target.value)} required placeholder="Please take action as per process update..." className={`p-2 border rounded text-xs outline-none font-sans ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-300'}`} />
-            </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold uppercase">Important Notes & Actions (RAW HTML allowed):*</label>
+                  <textarea rows={6} value={newNotes} onChange={(e) => setNewNotes(e.target.value)} required placeholder="Please take action as per process update..." className={`p-2 border rounded text-xs outline-none font-sans ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-300'}`} />
+                </div>
+              </div>
+            ) : (
+              /* LIVE RENDERING CONTAINER BLOCK */
+              <div className="p-6 border border-dashed border-gray-400/40 rounded-lg max-h-[55vh] overflow-y-auto bg-gray-500/5 shadow-inner">
+                <h3 className="text-xs font-black uppercase tracking-widest text-center text-emerald-500 mb-4 tracking-wider">— Live Preview Mode —</h3>
+                <div 
+                  className="font-serif text-sm leading-relaxed antialiased" 
+                  dangerouslySetInnerHTML={{ __html: newAnalysis || '<p class="opacity-50 italic text-center text-xs">No RAW HTML code written in the setup editor tab yet.</p>' }} 
+                />
+              </div>
+            )}
 
             <div className="flex gap-4 pt-2 justify-end">
-              <button type="submit" className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded text-xs uppercase tracking-wider">Save & Publish</button>
-              <button type="button" onClick={() => setShowAddModal(false)} className="px-6 py-2 bg-zinc-500 text-white font-bold rounded text-xs uppercase tracking-wider">Cancel</button>
+              <button type="submit" className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded text-xs uppercase tracking-wider shadow">Save & Publish</button>
+              <button type="button" onClick={() => setShowAddModal(false)} className="px-6 py-2 bg-zinc-500 text-white font-bold rounded text-xs uppercase tracking-wider shadow">Cancel</button>
             </div>
           </form>
         </div>
@@ -197,77 +244,11 @@ export default function WorkspaceView({
             <h2 className="text-lg font-black uppercase tracking-wider text-center border-b border-gray-400/10 pb-2">On Call interactive Diagram Matrix</h2>
             <div className="p-6 rounded-xl border border-gray-400/10 bg-gray-500/5 shadow-inner">
               
-              {/* FLOW TREE COMPILER WORKSPACE */}
-              {(() => {
-                const lines = cleanDataToArray(activeContent.onCallAnalysis)
-                if (lines.length === 0) return null
-
-                const initialFlow = []
-                let hasSplit = false
-                const leftBranch = []
-                const rightBranch = []
-
-                lines.forEach((line) => {
-                  const trimmed = line.trim()
-                  if (trimmed.includes('↙') || trimmed.includes('↘') || trimmed === '↙ ↘' || trimmed === '↙   ↘') {
-                    hasSplit = true
-                    return
-                  }
-
-                  if (hasSplit) {
-                    if (trimmed.includes('|')) {
-                      const parts = trimmed.split('|')
-                      if (parts[0]) leftBranch.push(parts[0].trim())
-                      if (parts[1]) rightBranch.push(parts[1].trim())
-                    } else {
-                      const upper = trimmed.toUpperCase()
-                      if (upper.includes('FAX') || upper.includes('EOB') || (upper.includes('HAS MET') && !upper.includes('EXCLUDING')) || upper.includes('POLICY ID')) {
-                        leftBranch.push(trimmed)
-                      } else {
-                        rightBranch.push(trimmed)
-                      }
-                    }
-                  } else {
-                    initialFlow.push(trimmed)
-                  }
-                })
-
-                const renderLineItem = (text, idx) => {
-                  const isArrow = text === '↓' || text === '│' || text === '↓ | ↓' || text === '| ↓'
-                  if (isArrow) {
-                    return <div key={idx} className="text-center text-zinc-600 dark:text-zinc-400 font-light text-base py-1">↓</div>
-                  }
-                  return (
-                    <div key={idx} className="text-center font-normal font-serif text-sm leading-relaxed max-w-xl mx-auto py-1 px-4 text-zinc-900 dark:text-zinc-100 antialiased select-none">
-                      {text}
-                    </div>
-                  )
-                }
-
-                return (
-                  <div className="w-full max-w-4xl mx-auto p-4 font-serif">
-                    <div className="flex flex-col items-center space-y-1">
-                      {initialFlow.map((line, idx) => renderLineItem(line, idx))}
-                    </div>
-                    {hasSplit && (
-                      <div className="w-full flex flex-col items-center mt-2">
-                        <div className="w-full max-w-xl flex justify-between items-center text-zinc-500 font-semibold text-lg px-24 my-2">
-                          <span>↙</span>
-                          <span>↘</span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-x-12 items-start w-full max-w-3xl pt-2">
-                          <div className="flex flex-col items-center space-y-2 w-full text-center">
-                            {leftBranch.map((line, idx) => renderLineItem(line, `l-${idx}`))}
-                          </div>
-                          <div className="flex flex-col items-center space-y-2 w-full text-center">
-                            {rightBranch.map((line, idx) => renderLineItem(line, `r-${idx}`))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })()}
+              {/* DIRECTLY RENDERING DYNAMIC RAW HTML FORMAT LOCKED BY ADMIN */}
+              <div 
+                className="w-full max-w-4xl mx-auto p-4 font-serif text-sm leading-relaxed overflow-x-auto"
+                dangerouslySetInnerHTML={{ __html: activeContent.onCallAnalysis }}
+              />
 
             </div>
           </div>
@@ -281,11 +262,10 @@ export default function WorkspaceView({
           {/* DYNAMIC LIST METRIC WRAPPER FOR IMPORTANT NOTES */}
           <div>
             <h2 className="text-lg font-black uppercase tracking-wider mb-3">Important Notes & Actions:</h2>
-            <ul className="list-disc pl-6 space-y-2 text-sm leading-relaxed font-medium">
-              {cleanDataToArray(activeContent.importantNotesAndActions).map((note, idx) => (
-                <li key={idx} className="opacity-90">{note}</li>
-              ))}
-            </ul>
+            <div 
+              className="pl-2 space-y-2 text-sm leading-relaxed font-medium"
+              dangerouslySetInnerHTML={{ __html: activeContent.importantNotesAndActions }}
+            />
           </div>
 
           <FormMatrix darkMode={darkMode} onFormSubmit={(compiledString) => setCompiledScratchNote(compiledString)} onFormReset={() => setCompiledScratchNote('')} />
