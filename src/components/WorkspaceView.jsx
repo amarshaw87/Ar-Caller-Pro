@@ -14,7 +14,7 @@ export default function WorkspaceView({
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
 
-  // Form State Vectors
+  // Administrative Form State Management Vectors
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState(currentTab)
   const [flowchartHtml, setFlowchartHtml] = useState('')
@@ -25,13 +25,18 @@ export default function WorkspaceView({
     setEditingId(scenarioItem.id)
     setTitle(scenarioItem.title)
     setCategory(scenarioItem.category)
-    setFlowchartHtml(scenarioItem.flowchartHtml || '')
+    setFlowchartHtml(scenarioItem.flowchart_html || scenarioItem.flowchartHtml || '')
     setShowAddForm(true)
   }
 
   const handleFormSubmit = (e) => {
     e.preventDefault()
-    const payload = { title, category, flowchartHtml }
+    const payload = { 
+      title, 
+      category, 
+      flowchart_html: flowchartHtml, // Sync directly with Supabase snake_case parameters
+      flowchartHtml: flowchartHtml 
+    }
 
     if (editingId) {
       onEditScenario(editingId, payload)
@@ -40,14 +45,14 @@ export default function WorkspaceView({
       onAddScenario({ id: generatedId, ...payload })
     }
 
-    // Reset Form Boundaries
+    // Reset Form Boundaries Cleanly
     setShowAddForm(false)
     setEditingId(null)
     setTitle('')
     setFlowchartHtml('')
   }
 
-  // Filter scenario indices relative to current active viewport navigation channels
+  // Segment Scenario Clusters Mapped To Active Channel Framework
   const activeCategory = currentTab === 'DENIALS' ? 'DENIALS' : 'AR SCENARIO'
   const scenarioKeysList = Object.keys(scenarios).filter(
     (key) => scenarios[key].category === activeCategory
@@ -56,7 +61,7 @@ export default function WorkspaceView({
   return (
     <div className="w-full flex flex-col min-h-screen">
       
-      {/* ================= HEADER CONTROL BELT ================= */}
+      {/* ==================== WORKSPACE HEADER MANAGEMENT CONTROL BELT ==================== */}
       <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-400/20 pb-4 mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-black uppercase tracking-tight">
@@ -83,7 +88,7 @@ export default function WorkspaceView({
         )}
       </div>
 
-      {/* ================= ADMIN MANAGEMENT GATEWAY FORM ================= */}
+      {/* ==================== ADMIN EDITING SANDBOX CONTROL FORM ==================== */}
       {showAddForm && currentUser.role === 'admin' && (
         <form onSubmit={handleFormSubmit} className="mb-6 p-6 border border-gray-400/30 rounded-xl bg-gray-500/5 space-y-4 max-w-4xl w-full mx-auto">
           <h2 className="text-base font-bold uppercase tracking-wider text-emerald-500">
@@ -139,7 +144,7 @@ export default function WorkspaceView({
         
         {/* 🗂️ COLUMN 1: LEFT VERTICAL STICKY NAVIGATION DIRECTORY PANEL (1/4 Width) */}
         <div className="lg:sticky lg:top-24 flex flex-col gap-2 p-4 border border-gray-400/20 rounded-xl bg-gray-500/5 max-h-[80vh] overflow-y-auto w-full shadow-inner">
-          <div className="text-[10px] font-black tracking-widest uppercase opacity-60 px-2 pb-2 border-b border-gray-400/10 mb-1">
+          <div className="text-[10px] font-black tracking-widest uppercase opacity-60 px-2 pb-2 border-b border-b-gray-400/10 mb-1">
             📁 Scenario Directory List ({scenarioKeysList.length})
           </div>
           
@@ -215,7 +220,9 @@ export default function WorkspaceView({
               {/* DYNAMIC RAW HTML COMPILER LAYOUT INJECTION CANVAS */}
               <div 
                 className="w-full overflow-x-auto rounded-lg bg-transparent"
-                dangerouslySetInnerHTML={{ __html: activeScenario.flowchartHtml || activeScenario.flowchart_html || '' }}
+                dangerouslySetInnerHTML={{ 
+                  __html: activeScenario.flowchart_html || activeScenario.flowchartHtml || activeScenario.body || '' 
+                }}
               />
             </div>
           ) : (
