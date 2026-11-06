@@ -1,284 +1,235 @@
 import React, { useState } from 'react'
-import FormMatrix from './FormMatrix'
-import Scratchpad from './Scratchpad'
 
-export default function WorkspaceView({ 
-  currentTab, 
-  scenarios, 
-  activeScenarioKey, 
-  setActiveScenarioKey, 
-  currentUser, 
-  onAddScenario, 
-  onDeleteScenario, 
-  onEditScenario, 
-  darkMode 
+export default function WorkspaceView({
+  currentTab,
+  scenarios,
+  activeScenarioKey,
+  setActiveScenarioKey,
+  currentUser,
+  onAddScenario,
+  onDeleteScenario,
+  onEditScenario,
+  darkMode
 }) {
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
+  const [showAddForm, setShowAddForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  
-  const [newTitle, setNewTitle] = useState('')
-  const [newAnalysis, setNewAnalysis] = useState('')
-  const [newNotes, setNewNotes] = useState('')
-  const [compiledScratchNote, setCompiledScratchNote] = useState('')
 
-  // State for tracking whether Code Editor or Live Preview is active inside the admin modal
-  const [previewActive, setPreviewActive] = useState(false)
+  // Form State Vectors
+  const [title, setTitle] = useState('')
+  const [category, setCategory] = useState(currentTab)
+  const [flowchartHtml, setFlowchartHtml] = useState('')
 
-  const filteredKeys = Object.keys(scenarios || {}).filter(key => scenarios[key]?.category === currentTab)
-  
-  const hasValidActive = scenarios && scenarios[activeScenarioKey] && scenarios[activeScenarioKey].category === currentTab
-  const fallbackKey = filteredKeys && filteredKeys.length > 0 ? filteredKeys[0] : null
-  const activeContent = hasValidActive ? scenarios[activeScenarioKey] : (fallbackKey ? scenarios[fallbackKey] : null)
+  const activeScenario = scenarios[activeScenarioKey] || null
 
-  const cleanDataToArray = (inputData) => {
-    if (!inputData) return []
-    let rawString = ''
-    
-    if (Array.isArray(inputData)) {
-      rawString = inputData.join('\n')
-    } else if (typeof inputData === 'string') {
-      rawString = inputData
-    } else {
-      rawString = JSON.stringify(inputData)
-    }
-
-    rawString = rawString
-      .replace(/[\[\]"']/g, '')
-      .replace(/\\n/g, '\n')
-      .replace(/,\s*(?=\n|$)/g, '\n')
-
-    return rawString.split('\n').map(line => line.trim()).filter(line => line !== '')
+  const handleOpenEdit = (scenarioItem) => {
+    setEditingId(scenarioItem.id)
+    setTitle(scenarioItem.title)
+    setCategory(scenarioItem.category)
+    setFlowchartHtml(scenarioItem.flowchartHtml || '')
+    setShowAddForm(true)
   }
 
-  const handleCreateScenarioSubmit = (e) => {
+  const handleFormSubmit = (e) => {
     e.preventDefault()
-    if (!newTitle.trim()) return
+    const payload = { title, category, flowchartHtml }
 
-    const targetId = isEditing ? editingId : newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_')
-    
-    const payload = {
-      id: targetId,
-      title: newTitle,
-      category: currentTab,
-      onCallAnalysis: newAnalysis,
-      flowchartImage: isEditing ? (scenarios[editingId]?.flowchartImage || 'placeholder-tree.png') : 'placeholder-tree.png',
-      importantNotesAndActions: newNotes
-    }
-
-    if (isEditing) {
+    if (editingId) {
       onEditScenario(editingId, payload)
     } else {
-      onAddScenario(payload)
+      const generatedId = title.toLowerCase().replace(/[^a-z0-9]+/g, '_')
+      onAddScenario({ id: generatedId, ...payload })
     }
 
-    setNewTitle('')
-    setNewAnalysis('')
-    setNewNotes('')
-    setShowAddModal(false)
-    setIsEditing(false)
+    // Reset Form Boundaries
+    setShowAddForm(false)
     setEditingId(null)
-    setActiveScenarioKey(payload.id)
-    setCompiledScratchNote('')
-    setPreviewActive(false) // Reset view back to default
+    setTitle('')
+    setFlowchartHtml('')
   }
 
-  const pageTitleHeader = currentTab === 'AR SCENARIO' 
-    ? 'AR Scenario - Click on Specific Scenario' 
-    : 'Denial Codes - Click on Denial Code'
+  // Filter scenario indices relative to current active viewport navigation channels
+  const activeCategory = currentTab === 'DENIALS' ? 'DENIALS' : 'AR SCENARIO'
+  const scenarioKeysList = Object.keys(scenarios).filter(
+    (key) => scenarios[key].category === activeCategory
+  )
 
   return (
-    <div className="space-y-6">
+    <div className="w-full flex flex-col min-h-screen">
       
-      {/* 1. MASTER DISCOVERY BANNER SECTION */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-400/20 pb-4">
+      {/* ================= HEADER CONTROL BELT ================= */}
+      <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-400/20 pb-4 mb-6 gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">{pageTitleHeader}</h1>
-          <p className="text-xs font-semibold text-emerald-500 mt-1">🔴 We have added a tool to prepare notes in the below scenarios. Please do share your feedback...</p>
+          <h1 className="text-2xl font-black uppercase tracking-tight">
+            ⚡ {currentTab} Interactive Workspace
+          </h1>
+          <p className="text-xs opacity-70 mt-1">
+            Select a specialized calling scenario loop from the left vertical directory panel to load its complete diagram tree blueprint.
+          </p>
         </div>
-        {currentUser?.role === 'admin' && (
-          <button 
+        {currentUser.role === 'admin' && (
+          <button
             onClick={() => {
-              setIsEditing(false); setEditingId(null); setNewTitle(''); setNewAnalysis(''); setNewNotes(''); setPreviewActive(false); setShowAddModal(true);
+              setEditingId(null)
+              setTitle('')
+              setFlowchartHtml('')
+              setCategory(currentTab)
+              setShowAddForm(!showAddForm)
             }}
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full shadow transition-all uppercase tracking-wider whitespace-nowrap"
+            type="button"
+            className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black rounded-full shadow-lg transition-all transform hover:-translate-y-0.5 uppercase tracking-wider"
           >
-            ➕ Add New Scenario
+            {showAddForm ? '❌ Close Editor Dashboard' : '➕ Add New Scenario Module'}
           </button>
         )}
       </div>
 
-      {/* 2. DYNAMIC LOOKUP DATA EXPORT FOR SECURITY BACKUPS */}
-      {currentUser?.role === 'admin' && (
-        <button 
-          onClick={() => {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(scenarios, null, 2))
-            const downloadAnchor = document.createElement('a')
-            downloadAnchor.setAttribute("href", dataStr)
-            downloadAnchor.setAttribute("download", "scenarios.json")
-            downloadAnchor.click()
-          }}
-          className="text-xs font-semibold px-3 py-1 bg-zinc-500/20 rounded border border-zinc-400 hover:bg-zinc-500/40 transition-all text-current"
-        >
-          💾 Download Updated scenarios.json File
-        </button>
-      )}
-
-      {/* 3. DYNAMIC INDEX DIRECTORY INTERNET SUB-LINKS GRID */}
-      <div className="p-4 border border-gray-400/20 rounded bg-gray-500/5">
-        <h3 className="text-xs font-bold uppercase tracking-wider mb-3 opacity-60">Completed Interactive Dialogue Modules</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          {filteredKeys.map((key) => (
-            <div
-              key={key}
-              className={`flex items-center justify-between text-left text-xs font-bold rounded border transition-all overflow-hidden ${activeScenarioKey === key ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-gray-500/10 border-gray-400/30 hover:bg-gray-500/20'}`}
-            >
-              <button
-                type="button"
-                onClick={() => { setActiveScenarioKey(key); setCompiledScratchNote(''); }}
-                className="p-3 text-left flex-grow truncate outline-none"
-              >
-                • {scenarios[key]?.title}
-              </button>
-
-              {currentUser?.role === 'admin' && (
-                <div className="flex items-center pr-2 gap-1.5 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsEditing(true)
-                      setEditingId(key)
-                      setNewTitle(scenarios[key]?.title || '')
-                      setNewAnalysis(Array.isArray(scenarios[key]?.onCallAnalysis) ? scenarios[key].onCallAnalysis.join('\n') : (scenarios[key]?.onCallAnalysis || ''))
-                      setNewNotes(Array.isArray(scenarios[key]?.importantNotesAndActions) ? scenarios[key].importantNotesAndActions.join('\n') : (scenarios[key]?.importantNotesAndActions || ''))
-                      setPreviewActive(false)
-                      setShowAddModal(true)
-                    }}
-                    className="p-1 text-[10px] bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                  >
-                    ✏️
-                  </button>
-                  <button type="button" onClick={() => onDeleteScenario(key)} className="p-1 text-[10px] bg-red-600 text-white rounded hover:bg-red-700 transition-colors">❌</button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-      {/* 4. ADMIN MODAL DIALOGUE CREATOR PORTAL POP-UP */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <form onSubmit={handleCreateScenarioSubmit} className={`w-full max-w-4xl p-6 border rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto space-y-4 ${darkMode ? 'bg-zinc-950 border-zinc-800 text-white' : 'bg-white border-gray-200 text-black'}`}>
-            
-            <div className="flex justify-between items-center pb-2 border-b border-gray-400/20">
-              <h2 className="text-base font-bold uppercase tracking-wider text-emerald-500">
-                {isEditing ? '✏️ Edit Existing' : '➕ Add New'} {currentTab} Dialogue Module
-              </h2>
-              
-              {/* RAW HTML SETUP TAB CONTROLS */}
-              <div className="flex border border-gray-400/40 rounded overflow-hidden text-xs font-bold shadow-sm">
-                <button 
-                  type="button" 
-                  onClick={() => setPreviewActive(false)} 
-                  className={`px-4 py-1.5 transition-colors ${!previewActive ? 'bg-emerald-500 text-white' : 'bg-gray-500/10 hover:bg-gray-500/20'}`}
-                >
-                  🖥️ RAW HTML Editor
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => setPreviewActive(true)} 
-                  className={`px-4 py-1.5 transition-colors ${previewActive ? 'bg-emerald-500 text-white' : 'bg-gray-500/10 hover:bg-gray-500/20'}`}
-                >
-                  👁️ Live Preview Tab
-                </button>
-              </div>
-            </div>
-            
+      {/* ================= ADMIN MANAGEMENT GATEWAY FORM ================= */}
+      {showAddForm && currentUser.role === 'admin' && (
+        <form onSubmit={handleFormSubmit} className="mb-6 p-6 border border-gray-400/30 rounded-xl bg-gray-500/5 space-y-4 max-w-4xl w-full mx-auto">
+          <h2 className="text-base font-bold uppercase tracking-wider text-emerald-500">
+            🛠️ {editingId ? 'Modify Active Script Vector' : 'Create Brand New Scenario Pipeline'}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold uppercase">Scenario Title / Code Name:*</label>
-              <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required placeholder="e.g., Patient Deductible Layout" className={`p-2 border rounded text-xs outline-none ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-300'}`} />
-            </div>
-
-            {/* DYNAMIC TOGGLE BETWEEN RAW HTML BOX AND LIVE RENDER VIEW */}
-            {!previewActive ? (
-              <div className="space-y-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold uppercase text-amber-500 tracking-wider">RAW HTML Code Setup for On Call Analysis Guide:*</label>
-                  <textarea 
-                    rows={12} 
-                    value={newAnalysis} 
-                    onChange={(e) => setNewAnalysis(e.target.value)} 
-                    required 
-                    placeholder="<div style='color: green;'><h3>Mera Custom Flow Tree</h3></div>" 
-                    className={`p-2 border rounded text-xs outline-none font-mono ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-300'}`} 
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold uppercase">Important Notes & Actions (RAW HTML allowed):*</label>
-                  <textarea rows={6} value={newNotes} onChange={(e) => setNewNotes(e.target.value)} required placeholder="Please take action as per process update..." className={`p-2 border rounded text-xs outline-none font-sans ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-300'}`} />
-                </div>
-              </div>
-            ) : (
-              /* LIVE RENDERING CONTAINER BLOCK */
-              <div className="p-6 border border-dashed border-gray-400/40 rounded-lg max-h-[55vh] overflow-y-auto bg-gray-500/5 shadow-inner">
-                <h3 className="text-xs font-black uppercase tracking-widest text-center text-emerald-500 mb-4 tracking-wider">— Live Preview Mode —</h3>
-                <div 
-                  className="font-serif text-sm leading-relaxed antialiased" 
-                  dangerouslySetInnerHTML={{ __html: newAnalysis || '<p class="opacity-50 italic text-center text-xs">No RAW HTML code written in the setup editor tab yet.</p>' }} 
-                />
-              </div>
-            )}
-
-            <div className="flex gap-4 pt-2 justify-end">
-              <button type="submit" className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded text-xs uppercase tracking-wider shadow">Save & Publish</button>
-              <button type="button" onClick={() => setShowAddModal(false)} className="px-6 py-2 bg-zinc-500 text-white font-bold rounded text-xs uppercase tracking-wider shadow">Cancel</button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* 5. CORE SIMULATOR RUNTIME DASHBOARD LAYOUT CONTROLS VIEW */}
-      {activeContent ? (
-        <div className="space-y-8 mt-4 border-t border-gray-400/10 pt-6">
-          
-          {/* FLOW TREE CANVAS HOUSING */}
-          <div className="w-full space-y-4">
-            <h2 className="text-lg font-black uppercase tracking-wider text-center border-b border-gray-400/10 pb-2">On Call interactive Diagram Matrix</h2>
-            <div className="p-6 rounded-xl border border-gray-400/10 bg-gray-500/5 shadow-inner">
-              
-              {/* DIRECTLY RENDERING DYNAMIC RAW HTML FORMAT LOCKED BY ADMIN */}
-              <div 
-                className="w-full max-w-4xl mx-auto p-4 font-serif text-sm leading-relaxed overflow-x-auto"
-                dangerouslySetInnerHTML={{ __html: activeContent.onCallAnalysis }}
+              <label className="text-[10px] font-bold uppercase tracking-wider opacity-80">Scenario Title String</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g., Claim Denied as TFL Expired"
+                className="p-2 border border-gray-400/30 rounded bg-transparent font-semibold text-sm w-full focus:outline-none focus:border-emerald-500"
+                required
               />
-
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold uppercase tracking-wider opacity-80">Target Tab Category Channel</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="p-2 border border-gray-400/30 rounded bg-zinc-900 text-white font-semibold text-sm w-full focus:outline-none"
+              >
+                <option value="AR SCENARIO">AR SCENARIO</option>
+                <option value="DENIALS">DENIALS</option>
+              </select>
             </div>
           </div>
-
-          {/* DYNAMIC FLOWCHART ANCHOR */}
-          <div className="p-4 border border-dashed border-gray-400/40 rounded bg-gray-500/5 flex flex-col justify-center items-center text-center">
-            <span className="text-[10px] uppercase font-mono tracking-widest opacity-40 mb-1">[ Flowchart Visualization Canvas File Anchor ]</span>
-            <img src={`images/${activeContent.flowchartImage}`} alt={activeContent.title} className="max-w-full h-auto rounded border border-gray-400/10" onError={(e) => { e.target.style.display = 'none' }} />
-          </div>
-
-          {/* DYNAMIC LIST METRIC WRAPPER FOR IMPORTANT NOTES */}
-          <div>
-            <h2 className="text-lg font-black uppercase tracking-wider mb-3">Important Notes & Actions:</h2>
-            <div 
-              className="pl-2 space-y-2 text-sm leading-relaxed font-medium"
-              dangerouslySetInnerHTML={{ __html: activeContent.importantNotesAndActions }}
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold uppercase tracking-wider opacity-80">Raw Flowchart HTML/Tailwind Code Sandbox Container</label>
+            <textarea
+              value={flowchartHtml}
+              onChange={(e) => setFlowchartHtml(e.target.value)}
+              placeholder="Paste your raw customized layout HTML text script strings here..."
+              rows="12"
+              className="p-3 border border-gray-400/30 rounded bg-transparent font-mono text-xs w-full focus:outline-none focus:border-emerald-500 leading-relaxed"
+              required
             />
           </div>
+          <button
+            type="submit"
+            className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-widest rounded-lg shadow transition-all"
+          >
+            🚀 Securely Save Configuration Matrix to Supabase Cloud
+          </button>
+        </form>
+      )}
+      {/* ================================================================= */}
+      {/* 🔄 THE TWO-COLUMN MASTER SIDEBAR GRID FRAMEWORK                  */}
+      {/* ================================================================= */}
+      <div className="w-full grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        
+        {/* 🗂️ COLUMN 1: LEFT VERTICAL STICKY NAVIGATION DIRECTORY PANEL (1/4 Width) */}
+        <div className="lg:sticky lg:top-24 flex flex-col gap-2 p-4 border border-gray-400/20 rounded-xl bg-gray-500/5 max-h-[80vh] overflow-y-auto w-full shadow-inner">
+          <div className="text-[10px] font-black tracking-widest uppercase opacity-60 px-2 pb-2 border-b border-gray-400/10 mb-1">
+            📁 Scenario Directory List ({scenarioKeysList.length})
+          </div>
+          
+          {scenarioKeysList.length === 0 ? (
+            <div className="p-4 text-xs opacity-60 font-mono text-center">
+              No active cloud modules found inside this channel tier.
+            </div>
+          ) : (
+            scenarioKeysList.map((key) => {
+              const item = scenarios[key]
+              const isSelected = activeScenarioKey === key
 
-          <FormMatrix darkMode={darkMode} onFormSubmit={(compiledString) => setCompiledScratchNote(compiledString)} onFormReset={() => setCompiledScratchNote('')} />
-          <Scratchpad darkMode={darkMode} compiledScratchNote={compiledScratchNote} setCompiledScratchNote={setCompiledScratchNote} />
+              return (
+                <div 
+                  key={key} 
+                  className={`group flex items-center justify-between p-2.5 rounded-lg border text-xs font-bold tracking-wide transition-all duration-200 cursor-pointer ${
+                    isSelected 
+                      ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/10 translate-x-1' 
+                      : 'border-gray-400/20 hover:border-gray-400/60 hover:bg-gray-500/10'
+                  }`}
+                  onClick={() => setActiveScenarioKey(key)}
+                >
+                  <span className="truncate pr-2">{item.title}</span>
+                  
+                  {/* Administrative Context Action Modifiers Grid */}
+                  {currentUser.role === 'admin' && (
+                    <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity shrink-0">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleOpenEdit({ id: key, ...item })
+                        }}
+                        className={`p-1 rounded transition-colors ${isSelected ? 'hover:bg-white/20 text-white' : 'hover:bg-zinc-500/20 text-blue-500'}`}
+                        title="Edit Module"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onDeleteScenario(key)
+                        }}
+                        className={`p-1 rounded transition-colors ${isSelected ? 'hover:bg-white/20 text-white' : 'hover:bg-zinc-500/20 text-red-500'}`}
+                        title="Delete Module"
+                      >
+                        ❌
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )
+            })
+          )}
+        </div>
+
+        {/* 📊 COLUMN 2: RIGHT INTERACTIVE DIAGRAM CANVAS VIEWPORT (3/4 Width) */}
+        <div className="lg:col-span-3 border border-gray-400/20 rounded-xl bg-gray-500/5 p-4 md:p-6 w-full min-h-[75vh] flex flex-col shadow-sm">
+          
+          {activeScenario ? (
+            <div className="w-full space-y-4 animate-fadeIn">
+              {/* Scenario Viewport Meta Header */}
+              <div className="border-b border-gray-400/10 pb-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                <h2 className="text-lg font-black tracking-tight uppercase text-emerald-500">
+                  🎯 Displaying: {activeScenario.title}
+                </h2>
+                <div className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-500/20 border border-zinc-400/30">
+                  Cluster ID: <span className="font-bold underline">{activeScenarioKey}</span>
+                </div>
+              </div>
+
+              {/* DYNAMIC RAW HTML COMPILER LAYOUT INJECTION CANVAS */}
+              <div 
+                className="w-full overflow-x-auto rounded-lg bg-transparent"
+                dangerouslySetInnerHTML={{ __html: activeScenario.flowchartHtml || activeScenario.flowchart_html || '' }}
+              />
+            </div>
+          ) : (
+            <div className="flex-grow flex flex-col items-center justify-center py-20 text-center space-y-3 opacity-60">
+              <div className="text-4xl">📊</div>
+              <h3 className="text-sm font-bold uppercase tracking-wider">No Module Active</h3>
+              <p className="max-w-xs text-xs font-medium leading-relaxed">
+                Click on any verified structural calling simulation route listed inside the left directory index menu to deploy the visual flowchart tracking loops.
+              </p>
+            </div>
+          )}
 
         </div>
-      ) : (
-        <p className="text-center py-12 text-sm opacity-50 italic">No scenario modules populated inside this category branch layer yet.</p>
-      )}
-
+      </div>
     </div>
   )
 }
